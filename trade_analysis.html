@@ -1,0 +1,1249 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nidhi Bot — Trade Analysis Report (Mar 2–20, 2026)</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #21262d;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --green: #3fb950;
+      --red: #f85149;
+      --yellow: #d29922;
+      --orange: #e3b341;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --tag-bg: #1f2937;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    /* ─── Layout ─── */
+    header {
+      background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px 20px;
+    }
+    header h1 { font-size: 1.7rem; font-weight: 700; color: var(--accent); }
+    header p  { color: var(--muted); margin-top: 4px; font-size: 0.85rem; }
+    .summary-strip {
+      display: flex; flex-wrap: wrap; gap: 16px;
+      padding: 20px 40px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .kpi {
+      flex: 1 1 160px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+    }
+    .kpi .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .kpi .value { font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+    .kpi .value.pos { color: var(--green); }
+    .kpi .value.neg { color: var(--red); }
+    .kpi .value.neu { color: var(--accent); }
+    main { padding: 28px 40px; max-width: 1400px; margin: 0 auto; }
+    section { margin-bottom: 48px; }
+    section h2 {
+      font-size: 1.15rem; font-weight: 700;
+      border-left: 3px solid var(--accent);
+      padding-left: 12px; margin-bottom: 16px;
+    }
+    /* ─── Day cards ─── */
+    .day-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+    .day-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .day-card:hover { border-color: var(--accent); }
+    .day-card .card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 18px 10px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .day-card .date-label { font-weight: 700; font-size: 1rem; }
+    .day-card .net-badge {
+      padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;
+    }
+    .badge-pos { background: rgba(63,185,80,.15); color: var(--green); }
+    .badge-neg { background: rgba(248,81,73,.15); color: var(--red); }
+    .badge-zero{ background: rgba(88,166,255,.1);  color: var(--accent); }
+    .card-meta { padding: 10px 18px; font-size: 0.8rem; color: var(--muted); display: flex; gap: 16px; flex-wrap: wrap; }
+    .card-body { padding: 12px 18px 16px; display: none; }
+    .card-body.open { display: block; }
+    /* ─── Trade table ─── */
+    .trade-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    .trade-table th {
+      text-align: left; padding: 7px 8px;
+      background: var(--surface2); color: var(--muted);
+      font-size: 0.7rem; text-transform: uppercase; letter-spacing: .05em;
+      border-bottom: 1px solid var(--border);
+    }
+    .trade-table td { padding: 7px 8px; border-bottom: 1px solid rgba(48,54,61,.5); }
+    .trade-table tr:last-child td { border-bottom: none; }
+    .side-sell { color: #f0883e; font-weight: 600; }
+    .side-buy  { color: var(--green); font-weight: 600; }
+    .pnl-pos   { color: var(--green); font-weight: 600; }
+    .pnl-neg   { color: var(--red); font-weight: 600; }
+    .pnl-zero  { color: var(--muted); }
+    .summary-row { background: rgba(88,166,255,.06); font-weight: 600; }
+    /* ─── Anomaly section ─── */
+    .anomaly-list { display: flex; flex-direction: column; gap: 12px; }
+    .anomaly-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--yellow);
+      border-radius: 8px;
+      padding: 14px 18px;
+    }
+    .anomaly-item.critical { border-left-color: var(--red); }
+    .anomaly-item.info     { border-left-color: var(--accent); }
+    .anomaly-item h4 { font-size: 0.9rem; margin-bottom: 6px; }
+    .anomaly-item p  { font-size: 0.82rem; color: var(--muted); }
+    .tag {
+      display: inline-block; font-size: 0.68rem; padding: 2px 8px;
+      border-radius: 4px; margin-right: 4px; margin-bottom: 4px;
+      font-weight: 600; letter-spacing: .04em;
+    }
+    .tag-red    { background: rgba(248,81,73,.2); color: var(--red); }
+    .tag-yellow { background: rgba(210,153,34,.2); color: var(--orange); }
+    .tag-blue   { background: rgba(88,166,255,.2); color: var(--accent); }
+    .tag-green  { background: rgba(63,185,80,.2); color: var(--green); }
+    /* ─── Heatmap row ─── */
+    .heatmap { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+    .hm-cell {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      width: 90px; height: 70px; border-radius: 8px; cursor: pointer;
+      font-size: 0.72rem; border: 1px solid transparent; transition: transform .15s;
+    }
+    .hm-cell:hover { transform: translateY(-2px); }
+    .hm-cell .hm-date { font-weight: 600; margin-bottom: 3px; }
+    .hm-cell .hm-val  { font-size: 0.85rem; font-weight: 700; }
+    /* ─── Cumulative PnL chart ─── */
+    .chart-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+    canvas { width: 100% !important; }
+    /* ─── March 20 analysis ─── */
+    .march20-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .stock-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+    .stock-card h4 { font-size: 1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .stock-card .reason { font-size: 0.82rem; }
+    .stock-card .rejection-log {
+      font-family: monospace; font-size: 0.72rem;
+      background: var(--surface2); border-radius: 6px;
+      padding: 8px 10px; margin-top: 8px; color: var(--muted);
+      line-height: 1.7;
+    }
+    .dot-red   { width: 9px; height: 9px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+    .dot-green { width: 9px; height: 9px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+    /* tabs */
+    .tab-bar { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+    .tab-btn {
+      padding: 8px 16px; border: none; background: transparent;
+      color: var(--muted); cursor: pointer; font-size: 0.85rem;
+      border-bottom: 2px solid transparent; margin-bottom: -1px;
+      transition: color .15s;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    /* toggle arrow */
+    .toggle-arrow { font-size: 0.8rem; color: var(--muted); transition: transform .2s; }
+    .toggle-arrow.open { transform: rotate(90deg); }
+    @media (max-width: 600px) {
+      header, .summary-strip, main { padding-left: 16px; padding-right: 16px; }
+      .hm-cell { width: 70px; height: 58px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📊 Nidhi Bot — Trade Analysis Report</h1>
+  <p>Period: 2 March 2026 – 20 March 2026 &nbsp;|&nbsp; All figures in ₹ &nbsp;|&nbsp; Paper Trading</p>
+</header>
+
+<!-- ─── KPI Strip ─── -->
+<div class="summary-strip">
+  <div class="kpi">
+    <div class="label">Trading Days</div>
+    <div class="value neu" id="kpi-days">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Total Trades</div>
+    <div class="value neu" id="kpi-trades">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Gross P&amp;L</div>
+    <div class="value" id="kpi-gross">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Total Charges</div>
+    <div class="value neg" id="kpi-charges">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Net P&amp;L (after charges)</div>
+    <div class="value" id="kpi-net">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Winning Days</div>
+    <div class="value pos" id="kpi-wins">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Losing Days</div>
+    <div class="value neg" id="kpi-losses">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Best Day</div>
+    <div class="value pos" id="kpi-best">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Worst Day</div>
+    <div class="value neg" id="kpi-worst">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Account Capital</div>
+    <div class="value neu">₹5,00,000</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Leverage Used</div>
+    <div class="value neu">5×</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Max Margin / Trade</div>
+    <div class="value neu">₹1,25,000</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Return on Capital</div>
+    <div class="value" id="kpi-roc">—</div>
+  </div>
+  <div class="kpi">
+    <div class="label">Annualised Return</div>
+    <div class="value" id="kpi-ann">—</div>
+  </div>
+</div>
+
+<main>
+
+<!-- ─── Tabs ─── -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="showTab('daywise')">Day-Wise Trades</button>
+  <button class="tab-btn" onclick="showTab('anomalies')">Anomalies &amp; Gaps</button>
+  <button class="tab-btn" onclick="showTab('march20')">🔍 March 20 Analysis</button>
+  <button class="tab-btn" onclick="showTab('reco')">💡 Recommendations</button>
+</div>
+
+<!-- ═══════════ TAB: OVERVIEW ═══════════ -->
+<div id="tab-overview" class="tab-pane active">
+
+  <section>
+    <h2>Cumulative P&amp;L Chart</h2>
+    <div class="chart-wrap">
+      <canvas id="pnlChart" height="280"></canvas>
+    </div>
+  </section>
+
+  <section>
+    <h2>Daily P&amp;L Heatmap</h2>
+    <div class="heatmap" id="heatmap"></div>
+  </section>
+
+  <section>
+    <h2>&#x1F4B0; Capital Usage Breakdown</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px">
+      <div style="background:var(--card);border-radius:8px;padding:14px;border-left:4px solid var(--accent)">
+        <div style="color:var(--muted);font-size:0.78rem;margin-bottom:4px">Account Balance Required</div>
+        <div style="font-size:1.4rem;font-weight:700">&#x20B9;5,00,000</div>
+        <div style="color:var(--muted);font-size:0.75rem">Actual cash in trading account</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:14px;border-left:4px solid #f39c12">
+        <div style="color:var(--muted);font-size:0.78rem;margin-bottom:4px">Intraday Leverage</div>
+        <div style="font-size:1.4rem;font-weight:700">5&#xD7;</div>
+        <div style="color:var(--muted);font-size:0.75rem">Broker-provided MIS leverage</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:14px;border-left:4px solid #9b59b6">
+        <div style="color:var(--muted);font-size:0.78rem;margin-bottom:4px">Max Notional / Trade</div>
+        <div style="font-size:1.4rem;font-weight:700">&#x20B9;6,25,000</div>
+        <div style="color:var(--muted);font-size:0.75rem">25% capital x 5x leverage per trade</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:14px;border-left:4px solid #3498db">
+        <div style="color:var(--muted);font-size:0.78rem;margin-bottom:4px">Margin Blocked / Trade</div>
+        <div style="font-size:1.4rem;font-weight:700">&#x20B9;1,25,000</div>
+        <div style="color:var(--muted);font-size:0.75rem">Max 25% of account per position</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:14px;border-left:4px solid #2ecc71">
+        <div style="color:var(--muted);font-size:0.78rem;margin-bottom:4px">Risk Per Trade (Fixed)</div>
+        <div style="font-size:1.4rem;font-weight:700">&#x20B9;2,500</div>
+        <div style="color:var(--muted);font-size:0.75rem">0.5% of account — ATR-based SL</div>
+      </div>
+      <div style="background:var(--card);border-radius:8px;padding:14px;border-left:4px solid #e74c3c">
+        <div style="color:var(--muted);font-size:0.78rem;margin-bottom:4px">Max Concurrent Positions</div>
+        <div style="font-size:1.4rem;font-weight:700">10 trades</div>
+        <div style="color:var(--muted);font-size:0.75rem">Capped by MAX_TRADES_ACTIVE</div>
+      </div>
+    </div>
+    <div style="background:var(--card);border-radius:8px;padding:14px;font-size:0.84rem;color:var(--muted)">
+      <strong style="color:var(--text)">&#x26A0;&#xFE0F; Overnight Risk = Zero</strong> — All positions are squared off at 15:10 (intraday MIS). You need &#x20B9;5,00,000 in your Fyers account. Each rupee controls &#x20B9;5 of stock. If the broker changes leverage, position sizes adjust automatically through <code>max_cap_qty</code> in the bot code — no manual changes needed.
+    </div>
+  
+
+  <section>
+    <h2>Day-Wise Summary Table</h2>
+    <div style="overflow-x:auto">
+    <table class="trade-table" style="width:100%">
+      <thead>
+        <tr>
+          <th>Date</th><th>Day</th><th>Market Bias</th><th># Trades</th>
+          <th>Gross P&amp;L (₹)</th><th>Charges (₹)</th><th>Net P&amp;L (₹)</th>
+          <th>Session End</th><th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="summaryBody"></tbody>
+    </table>
+    </div>
+  </section>
+</div>
+
+<!-- ═══════════ TAB: DAY-WISE TRADES ═══════════ -->
+<div id="tab-daywise" class="tab-pane">
+  <section>
+    <h2>Individual Day Cards — Click to Expand</h2>
+    <div class="day-grid" id="dayGrid"></div>
+  </section>
+</div>
+
+<!-- ═══════════ TAB: ANOMALIES ═══════════ -->
+<div id="tab-anomalies" class="tab-pane">
+  <section>
+    <h2>Execution Anomalies &amp; Gaps</h2>
+    <div class="anomaly-list">
+
+      <div class="anomaly-item critical">
+        <h4>🔴 March 3 — Script Never Ran During Market Hours</h4>
+        <span class="tag tag-red">MISSED SESSION</span>
+        <span class="tag tag-yellow">LATE START</span>
+        <p>The script was first launched at <strong>13:34</strong> and again at <strong>14:27</strong> — both after the prime morning session (09:30–13:00) had already closed. By 13:35 the market had also shifted BEARISH. The entire bullish morning window was missed. The dashboard shows BULLISH from 09:00 with A/D at 186/17 at open — several strong BUY setups likely existed. <strong>Result: ₹0 P&amp;L. Estimated opportunity loss: unknown.</strong></p>
+      </div>
+
+      <div class="anomaly-item">
+        <h4>🟡 March 2 — Early Session Termination at 14:07</h4>
+        <span class="tag tag-yellow">EARLY EXIT</span>
+        <p>Normal sessions run until 15:10. On March 2 the bot printed its end-of-day summary at <strong>14:07</strong> and stopped. The session was fully profitable (Gross: ₹3,855). The market was still BEARISH (strong trend direction). Potential reason: manual kill or uncaught exception. Trades remaining open were closed before the normal close time.</p>
+      </div>
+
+      <div class="anomaly-item">
+        <h4>🟡 March 4 — Early Session Termination at 11:06</h4>
+        <span class="tag tag-yellow">EARLY EXIT</span>
+        <p>End-of-day summary printed at <strong>11:06</strong> — just 96 minutes into the session. The market was in a strong BEARISH regime (A/D 10/195 at close). 10 trades were taken and summarized. Whether this was intentional (e.g., daily-loss limit hit) or a crash is unclear from the logs.</p>
+      </div>
+
+      <div class="anomaly-item">
+        <h4>🟡 March 13 — Session Ended at 10:27 (Best Gross Day: ₹10,236)</h4>
+        <span class="tag tag-yellow">EARLY EXIT</span>
+        <span class="tag tag-green">PROFIT LOCK</span>
+        <p>The bot printed its summary at <strong>10:27</strong> — only 57 minutes into trading. Gross P&amp;L was ₹10,236 (Net ₹9,127). This looks like an automatic <em>profit-target exit</em> or an unhandled exception after a surge in profits. Market was deeply bearish (15 Advances vs 190 Declines at close). Had the session continued, more profitable SELL setups likely existed.</p>
+      </div>
+
+      <div class="anomaly-item">
+        <h4>🟡 March 16 — Session Ended at 10:58 (Best Net Day: ₹23,998)</h4>
+        <span class="tag tag-yellow">EARLY EXIT</span>
+        <span class="tag tag-green">PROFIT LOCK</span>
+        <p>Similar pattern to March 13: the bot printed its trade summary at <strong>10:58</strong> after recording its best net day of the entire period (₹23,998 net). The market was in a sustained BEARISH regime and the session had 13 profitable open trades. Dashboard shows the last snapshot NET of ₹30,704.90 (open positions). Post 10:58 the bot appears to have been running without taking new trades (dashboard continues but no new trades logged).</p>
+      </div>
+
+      <div class="anomaly-item info">
+        <h4>🔵 March 9 — Only 1 Trade, All Others Filtered</h4>
+        <span class="tag tag-blue">LOW ACTIVITY</span>
+        <p>Despite the market being bearish (21 A / 185 D), only BLUESTARCO qualified and was taken SELL — which then hit SL immediately (loss ₹2,655). The heavy sector-filtering and RVOL requirements blocked all other candidates. This may reflect a regime where few stocks met the stringent volume × sector conditions.</p>
+      </div>
+
+      <div class="anomaly-item info">
+        <h4>🔵 March 18 — Only 1 Trade Taken (EICHERMOT), SL Hit in 16 Min</h4>
+        <span class="tag tag-blue">LOW ACTIVITY</span>
+        <p>Market was BULLISH all day (180 Advances) yet only EICHERMOT qualified at open. It entered BUY at 07:57:30 and hit SL 16 minutes later. No further setups qualified for the remainder of the day despite a strong bull market. Suggests stringent intraday filters may be over-fit for bullish conditions.</p>
+      </div>
+
+      <div class="anomaly-item info">
+        <h4>🔵 March 10 — Back-to-Back SL Hits at Open, Then Regime Defense Triggered</h4>
+        <span class="tag tag-blue">REGIME CONFLICT</span>
+        <p>AUROPHARMA and MANKIND were both taken BUY at 09:30. Within 2 minutes (09:32) the market shifted BEARISH, triggering "REGIME DEFENSE: SL Squeezed 50%". Both positions hit SL almost immediately. COLPAL entered at 10:15 and held until 15:00 SL hit. Total loss: ~₹3,215.</p>
+      </div>
+
+      <div class="anomaly-item">
+        <h4>🟡 March 6 — Heavy Losses (₹9,563 net loss), 12 Trades, All Losing</h4>
+        <span class="tag tag-red">LOSS DAY</span>
+        <p>12 trades were taken and 11 lost. The market was mixed (oscillating between BUY and SELL signals). The bot took several BUY trades in what turned out to be a SELL regime and vice-versa. GODREJPROP SELL was the only winner (+₹1,291). Charges were ₹1,532 (highest of the period). The number of trades and losses suggests the session may have had issues with regime detection accuracy.</p>
+      </div>
+
+      <div class="anomaly-item info">
+        <h4>🔵 WebSocket Reconnections Overnight (Mar 20–21)</h4>
+        <span class="tag tag-blue">INFRA</span>
+        <p>The March 20 log shows repeated Order WebSocket disconnections at 23:23, 00:14, 00:53, 02:41, and 06:45 on March 21. The final reconnect at 06:45 got a 403 Forbidden (expired Fyers token). This indicates the auth token was not refreshed overnight, which could prevent the next day's session from starting correctly — similar to the <strong>March 3 late-start anomaly</strong>.</p>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<!-- ═══════════ TAB: MARCH 20 ═══════════ -->
+<div id="tab-march20" class="tab-pane">
+  <section>
+    <h2>🔍 March 20 — Why TataPower, IndusTower &amp; Biocon Were Missed</h2>
+
+    <p style="margin-bottom:18px; color:var(--muted); font-size:0.85rem;">
+      On March 20, 2026, three stocks were executed as live manual trades outside the bot.
+      Below is a detailed breakdown of why each one was not (or only partially) executed by the script.
+    </p>
+
+    <div class="march20-grid">
+
+      <!-- TATAPOWER -->
+      <div class="stock-card" style="border-color:#f85149">
+        <h4><span class="dot-red"></span> TATAPOWER <span class="tag tag-red">NOT TRADED</span></h4>
+        <div class="reason">
+          <p style="margin-bottom:6px"><strong>Root Cause:</strong> Sector filter blocked every attempt.</p>
+          <p style="color:var(--muted); margin-bottom:6px; font-size:0.82rem;">
+            TataPower belongs to <code>NSE:NIFTYENERGY-INDEX</code>. On March 20, the Energy sector was
+            <strong>NOT in the bot's Top-5 performing sectors</strong> at the 09:30 scan window.
+            The bot only allows trades in the top 5 sectors by momentum score.
+          </p>
+        </div>
+        <div class="rejection-log">
+          09:30:17 ❌ TATAPOWER BUY REJECTED:<br>
+          &nbsp;&nbsp;Sector NSE:NIFTYENERGY-INDEX Not Top 5<br>
+          <span style="color:#3fb950">Overall market: BULLISH (A/D 196/10)</span>
+        </div>
+        <p style="margin-top:10px; font-size:0.78rem; color:var(--muted);">
+          <strong>⚠️ Gap:</strong> Despite the stock having a valid technical setup (hence manual trade),
+          the sector-rank filter acted as a hard block. If Energy was performing well that day,
+          the sector ranking may need a shorter lookback or a manual override capability.
+        </p>
+      </div>
+
+      <!-- INDUSTOWER -->
+      <div class="stock-card" style="border-color:#f85149">
+        <h4><span class="dot-red"></span> INDUSTOWER <span class="tag tag-red">NOT TRADED</span></h4>
+        <div class="reason">
+          <p style="margin-bottom:6px"><strong>Root Cause:</strong> Double barrier — sector filter + weak candle close.</p>
+          <p style="color:var(--muted); margin-bottom:6px; font-size:0.82rem;">
+            IndusTower belongs to <code>NSE:NIFTYINFRA-INDEX</code> which was also not in the Top-5 sectors.
+            Additionally, on the 10:00 and 10:15 candles, the closing was "weak" (upper wicks >30%),
+            which the bot treats as a low-conviction BUY signal.
+          </p>
+        </div>
+        <div class="rejection-log">
+          09:30:17 ❌ INDUSTOWER BUY REJECTED:<br>
+          &nbsp;&nbsp;Sector NSE:NIFTYINFRA-INDEX Not Top 5<br>
+          10:00:14 ❌ INDUSTOWER BUY REJECTED:<br>
+          &nbsp;&nbsp;Weak Close (Upper Wick 61% &gt; 30%)<br>
+          10:15:08 ❌ INDUSTOWER BUY REJECTED:<br>
+          &nbsp;&nbsp;Weak Close (Upper Wick 35% &gt; 30%)<br>
+          10:30:11 ❌ INDUSTOWER BUY REJECTED:<br>
+          &nbsp;&nbsp;Sector NSE:NIFTYINFRA-INDEX Not Top 5
+        </div>
+        <p style="margin-top:10px; font-size:0.78rem; color:var(--muted);">
+          <strong>⚠️ Gap:</strong> IndusTower was scanned repeatedly (4 times) but rejected each time.
+          The persistent sector exclusion + weak-wick candle combination means the bot would
+          <em>never</em> take this trade regardless of how good the price action was.
+        </p>
+      </div>
+
+      <!-- BIOCON -->
+      <div class="stock-card" style="border-color:#d29922">
+        <h4><span class="dot-green"></span> BIOCON <span class="tag tag-yellow">TAKEN LATE (13:30)</span></h4>
+        <div class="reason">
+          <p style="margin-bottom:6px"><strong>Status:</strong> <em>The script DID trade Biocon</em> — but only from 13:30 onward.</p>
+          <p style="color:var(--muted); margin-bottom:6px; font-size:0.82rem;">
+            Biocon qualified with RVOL 8.4× at the 13:30 scan (extremely high relative volume).
+            It was entered BUY @ ₹380.70 with Qty 1,010. SL was hit at ₹379.40 at 14:33.
+            If the manual trade was taken earlier in the day at a better entry,
+            the script's first valid qualification window was only at 13:30.
+          </p>
+        </div>
+        <div class="rejection-log">
+          13:30:13 ✅ BIOCON BUY QUALIFIED (RVOL: 8.4×)<br>
+          13:30:13 📈 [PAPER] BUYING NSE:BIOCON-EQ<br>
+          &nbsp;&nbsp;Entry: ₹380.70 | Qty: 1,010<br>
+          14:33:15 ❌ EXIT BIOCON: SL Hit @ ₹379.40<br>
+          <br>
+          Final: GROSS −₹1,313 | NET −₹1,497.88
+        </div>
+        <p style="margin-top:10px; font-size:0.78rem; color:var(--muted);">
+          <strong>⚠️ Gap:</strong> If the live trade was taken earlier (e.g., morning session),
+          the bot's volume filter (RVOL threshold) may have blocked earlier candles.
+          The stock only achieved sufficient relative volume by 13:30 — afternoon entry timing mismatch.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="anomaly-item" style="margin-top:4px">
+      <h4>📋 Summary: Why the Script Missed TataPower &amp; IndusTower on March 20</h4>
+      <p>
+        Both TataPower (<code>NIFTYENERGY</code>) and IndusTower (<code>NIFTYINFRA</code>) were blocked by the
+        <strong>sector-ranking filter</strong>. On March 20, the market was broadly BULLISH (A/D: 196/10 at open)
+        but the top-5 sectors were dominated by other indices (IT, Pharma, FMCG, Auto, Consumer Durables based on the approved stocks
+        that did qualify). Energy and Infrastructure stocks were in the lower half of sector rankings that day.
+        <br><br>
+        <strong>Recommendation:</strong> Consider adding a manual-override watchlist or a "sector-agnostic" bypass
+        for stocks with very high RVOL (&gt;3×) on strong trend days, so that high-conviction technical setups
+        don't get blocked purely by sector rank.
+      </p>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<script>
+// ═══════════════════════════ DATA ═══════════════════════════
+const days = [
+  {
+    date: "02 Mar", day: "Mon", bias: "BEARISH",
+    sessionEnd: "14:07 ⚠️", anomaly: "Early exit at 14:07",
+    gross: 3855.38, charges: 568.98, net: 3286.40,
+    trades: [
+      { sym:"PATANJALI", side:"SELL", entry:"09:32", exit:"09:37", qty:245, ep:499.80, xp:503.90, pnl:-1095.74 },
+      { sym:"TATACONSUM", side:"SELL", entry:"10:01", exit:"14:07", qty:97, ep:1131.10, xp:1115.60, pnl:1417.01 },
+      { sym:"NHPC",       side:"SELL", entry:"10:30", exit:"14:07", qty:1228, ep:74.77, xp:72.91, pnl:2204.07 },
+      { sym:"BHEL",       side:"SELL", entry:"10:30", exit:"14:07", qty:341, ep:262.55, xp:261.85, pnl:159.37 },
+      { sym:"JUBLFOOD",   side:"SELL", entry:"10:45", exit:"14:07", qty:128, ep:507.00, xp:503.90, pnl:327.72 },
+      { sym:"TRENT",      side:"SELL", entry:"10:45", exit:"14:07", qty:20, ep:3829.90, xp:3809.80, pnl:327.32 },
+      { sym:"SUPREMEIND", side:"SELL", entry:"13:30", exit:"14:06", qty:29, ep:3933.40, xp:3932.20, pnl:-53.36 },
+    ]
+  },
+  {
+    date: "03 Mar", day: "Tue", bias: "MISSED",
+    sessionEnd: "13:34 ⚠️", anomaly: "Script started at 13:34 — missed full morning",
+    gross: 0, charges: 0, net: 0,
+    trades: []
+  },
+  {
+    date: "04 Mar", day: "Wed", bias: "BEARISH",
+    sessionEnd: "11:06 ⚠️", anomaly: "Session stopped at 11:06",
+    gross: 3502.15, charges: 737.39, net: 2764.76,
+    trades: [
+      { sym:"DLF",       side:"SELL", entry:"09:30", exit:"11:06", qty:226, ep:571.45, xp:569.10, pnl:437.57 },
+      { sym:"OBEROIRLTY",side:"SELL", entry:"09:30", exit:"11:06", qty:79,  ep:1445.70,xp:1444.20,pnl:30.30 },
+      { sym:"LODHA",     side:"SELL", entry:"09:30", exit:"11:06", qty:131, ep:930.65, xp:926.20, pnl:492.02 },
+      { sym:"TORNTPOWER",side:"SELL", entry:"09:30", exit:"11:06", qty:71,  ep:1478.30,xp:1485.00,pnl:-560.62 },
+      { sym:"BPCL",      side:"SELL", entry:"09:30", exit:"11:06", qty:319, ep:359.20, xp:359.20, pnl:-88.34 },
+      { sym:"AMBUJACEM", side:"SELL", entry:"09:30", exit:"11:06", qty:257, ep:474.60, xp:475.50, pnl:-322.31 },
+      { sym:"JINDALSTEL",side:"SELL", entry:"09:30", exit:"11:06", qty:137, ep:1196.70,xp:1181.00,pnl:2044.98 },
+      { sym:"APLAPOLLO", side:"SELL", entry:"09:30", exit:"11:06", qty:59,  ep:2162.70,xp:2148.80,pnl:727.14 },
+      { sym:"UPL",       side:"SELL", entry:"09:30", exit:"11:06", qty:2,   ep:609.05, xp:607.75, pnl:1.30 },
+      { sym:"BHEL",      side:"SELL", entry:"09:30", exit:"11:06", qty:1,   ep:253.50, xp:250.50, pnl:2.73 },
+    ]
+  },
+  {
+    date: "05 Mar", day: "Thu", bias: "BULLISH",
+    sessionEnd: "15:10 ✅", anomaly: "",
+    gross: -229.80, charges: 739.36, net: -969.16,
+    trades: [
+      { sym:"PHOENIXLTD", side:"BUY", entry:"09:30", exit:"12:44", qty:130, ep:1643.60, xp:1625.60, pnl:-2463.24 },
+      { sym:"HINDALCO",   side:"BUY", entry:"10:00", exit:"10:37", qty:97,  ep:961.00,  xp:982.30,  pnl:1984.83 },
+      { sym:"PAGEIND",    side:"BUY", entry:"10:00", exit:"12:31", qty:4,   ep:31330.00,xp:31760.00,pnl:1627.30 },
+      { sym:"NTPC",       side:"BUY", entry:"10:00", exit:"14:18", qty:650, ep:375.00,  xp:375.15,  pnl:-37.25 },
+      { sym:"PREMIERENE", side:"BUY", entry:"13:00", exit:"13:06", qty:296, ep:717.50,  xp:710.35,  pnl:-2239.24 },
+      { sym:"PAGEIND",    side:"BUY", entry:"10:00", exit:"14:01", qty:5,   ep:31330.00,xp:31330.00,pnl:-103.45 },
+      { sym:"HINDALCO",   side:"BUY", entry:"10:00", exit:"14:55", qty:98,  ep:961.00,  xp:964.50,  pnl:261.89 },
+    ]
+  },
+  {
+    date: "06 Mar", day: "Fri", bias: "MIXED",
+    sessionEnd: "15:10 ✅", anomaly: "Heavy loss day — 11/12 trades lost",
+    gross: -8029.92, charges: 1532.78, net: -9562.70,
+    trades: [
+      { sym:"MARICO",     side:"BUY",  entry:"09:30", exit:"12:04", qty:415, ep:787.50, xp:784.95, pnl:-1222.49 },
+      { sym:"TCS",        side:"BUY",  entry:"09:30", exit:"10:36", qty:105, ep:2617.10,xp:2598.00,pnl:-2150.79 },
+      { sym:"BLUESTARCO", side:"BUY",  entry:"09:45", exit:"10:25", qty:87,  ep:1957.00,xp:1938.70,pnl:-1699.97 },
+      { sym:"NMDC",       side:"BUY",  entry:"10:00", exit:"10:16", qty:1327,ep:80.19,  xp:81.69,  pnl:1904.52 },
+      { sym:"GRASIM",     side:"BUY",  entry:"10:30", exit:"10:57", qty:94,  ep:2745.00,xp:2726.20,pnl:-1906.54 },
+      { sym:"TORNTPHARM", side:"SELL", entry:"10:30", exit:"12:08", qty:88,  ep:4323.10,xp:4333.80,pnl:-1125.46 },
+      { sym:"NHPC",       side:"BUY",  entry:"10:45", exit:"10:59", qty:3801,ep:74.98,  xp:74.71,  pnl:-1175.50 },
+      { sym:"NMDC",       side:"BUY",  entry:"10:00", exit:"10:46", qty:1328,ep:80.19,  xp:80.44,  pnl:246.47 },
+      { sym:"PERSISTENT", side:"BUY",  entry:"10:30", exit:"14:57", qty:33,  ep:4781.00,xp:4765.00,pnl:-631.70 },
+      { sym:"GODREJPROP", side:"SELL", entry:"11:00", exit:"15:10", qty:97,  ep:1680.70,xp:1666.30,pnl:1291.16 },
+      { sym:"ADANIENSOL", side:"BUY",  entry:"13:15", exit:"14:50", qty:319, ep:996.60, xp:994.00, pnl:-990.51 },
+      { sym:"UNITDSPR",   side:"BUY",  entry:"13:30", exit:"13:34", qty:107, ep:1414.80,xp:1396.10,pnl:-2101.88 },
+    ]
+  },
+  {
+    date: "09 Mar", day: "Mon", bias: "BEARISH",
+    sessionEnd: "15:10 ✅", anomaly: "Only 1 trade all day",
+    gross: -2535.90, charges: 119.84, net: -2655.74,
+    trades: [
+      { sym:"BLUESTARCO", side:"SELL", entry:"09:30", exit:"10:10", qty:107, ep:1886.00, xp:1909.70, pnl:-2655.74 },
+    ]
+  },
+  {
+    date: "10 Mar", day: "Tue", bias: "BEARISH",
+    sessionEnd: "15:00 ✅", anomaly: "Regime defense triggered at 09:32",
+    gross: -3215.40, charges: 347.00, net: -3562.40,
+    trades: [
+      { sym:"AUROPHARMA", side:"BUY", entry:"09:30", exit:"09:36", qty:244, ep:1269.00, xp:1263.90, pnl:-1244.40 },
+      { sym:"MANKIND",    side:"BUY", entry:"09:30", exit:"09:45", qty:141, ep:2200.00, xp:2190.00, pnl:-1410.00 },
+      { sym:"COLPAL",     side:"BUY", entry:"10:15", exit:"15:00", qty:170, ep:2197.60, xp:2190.00, pnl:-1292.00 },
+    ]
+  },
+  {
+    date: "11 Mar", day: "Wed", bias: "MIXED",
+    sessionEnd: "15:10 ✅", anomaly: "",
+    gross: 7714.20, charges: 2358.21, net: 5355.99,
+    trades: [
+      { sym:"JUBLFOOD",   side:"SELL", entry:"09:45", exit:"09:48", qty:836, ep:476.80, xp:478.35, pnl:-1486.21 },
+      { sym:"KALYANKJIL", side:"BUY",  entry:"09:30", exit:"10:09", qty:706, ep:401.45, xp:397.80, pnl:-2725.12 },
+      { sym:"TATAPOWER",  side:"BUY",  entry:"09:30", exit:"10:10", qty:904, ep:389.00, xp:387.80, pnl:-1257.95 },
+      { sym:"PGEL",       side:"BUY",  entry:"09:45", exit:"11:01", qty:261, ep:552.40, xp:554.15, pnl:357.65 },
+      { sym:"LAURUSLABS", side:"BUY",  entry:"10:15", exit:"13:47", qty:342, ep:1055.90,xp:1053.40,pnl:-1031.62 },
+      { sym:"COFORGE",    side:"SELL", entry:"10:00", exit:"14:52", qty:86,  ep:1132.40,xp:1113.30,pnl:1560.55 },
+      { sym:"DRREDDY",    side:"BUY",  entry:"10:30", exit:"12:34", qty:287, ep:1331.70,xp:1326.70,pnl:-1619.02 },
+      { sym:"BIOCON",     side:"BUY",  entry:"10:30", exit:"14:27", qty:890, ep:400.20, xp:399.65, pnl:-664.45 },
+      { sym:"LUPIN",      side:"BUY",  entry:"10:45", exit:"11:49", qty:180, ep:2368.20,xp:2354.30,pnl:-2701.53 },
+      { sym:"M&M",        side:"SELL", entry:"10:45", exit:"15:10", qty:86,  ep:3206.30,xp:3160.60,pnl:3784.27 },
+      { sym:"TCS",        side:"SELL", entry:"10:45", exit:"15:10", qty:27,  ep:2481.50,xp:2465.10,pnl:371.61 },
+      { sym:"CROMPTON",   side:"BUY",  entry:"13:00", exit:"13:47", qty:1237,ep:249.00, xp:247.75, pnl:-1703.60 },
+      { sym:"IRCTC",      side:"SELL", entry:"13:15", exit:"15:10", qty:964, ep:539.05, xp:535.05, pnl:3622.48 },
+      { sym:"ULTRACEMCO", side:"SELL", entry:"13:15", exit:"15:10", qty:10,  ep:11505.00,xp:11462.00,pnl:341.52 },
+      { sym:"KEI",        side:"SELL", entry:"10:15", exit:"15:10", qty:43,  ep:4426.00,xp:4327.50,pnl:4120.26 },
+      { sym:"COFORGE",    side:"SELL", entry:"10:00", exit:"15:10", qty:176, ep:1132.40,xp:1106.80,pnl:4387.15 },
+    ]
+  },
+  {
+    date: "12 Mar", day: "Thu", bias: "MIXED",
+    sessionEnd: "15:10 ✅", anomaly: "",
+    gross: 1445.40, charges: 459.22, net: 986.18,
+    trades: [
+      { sym:"MARICO",   side:"SELL", entry:"09:30", exit:"09:49", qty:481, ep:751.45, xp:756.65, pnl:-2678.36 },
+      { sym:"GODREJCP", side:"SELL", entry:"09:30", exit:"11:39", qty:238, ep:1065.40,xp:1061.70,pnl:742.42 },
+      { sym:"ABB",      side:"BUY",  entry:"13:15", exit:"15:10", qty:42,  ep:6352.00,xp:6425.00,pnl:2922.12 },
+    ]
+  },
+  {
+    date: "13 Mar", day: "Fri", bias: "BEARISH",
+    sessionEnd: "10:27 ⚠️", anomaly: "Session ended at 10:27 — likely profit-target exit",
+    gross: 10236.15, charges: 1108.97, net: 9127.18,
+    trades: [
+      { sym:"MPHASIS",   side:"SELL", entry:"09:30", exit:"10:27", qty:135, ep:2133.50, xp:2131.20, pnl:159.90 },
+      { sym:"PAGEIND",   side:"SELL", entry:"09:45", exit:"10:27", qty:11,  ep:30415.00,xp:30220.00,pnl:1977.82 },
+      { sym:"PIDILITIND",side:"SELL", entry:"09:45", exit:"10:27", qty:283, ep:1375.30, xp:1367.00, pnl:2162.11 },
+      { sym:"BLUESTARCO",side:"SELL", entry:"09:45", exit:"10:27", qty:106, ep:1874.40, xp:1857.40, pnl:1683.58 },
+      { sym:"HINDZINC",  side:"SELL", entry:"09:45", exit:"10:27", qty:436, ep:564.40,  xp:556.75,  pnl:3200.08 },
+      { sym:"TATATECH",  side:"SELL", entry:"10:00", exit:"10:27", qty:637, ep:542.50,  xp:542.35,  pnl:-75.72 },
+      { sym:"DRREDDY",   side:"SELL", entry:"10:15", exit:"10:27", qty:284, ep:1296.50, xp:1295.80, pnl:19.41 },
+    ]
+  },
+  {
+    date: "16 Mar", day: "Mon", bias: "BEARISH",
+    sessionEnd: "10:58 ⚠️", anomaly: "Session ended at 10:58 — best net day",
+    gross: 25384.05, charges: 1385.90, net: 23998.15,
+    trades: [
+      { sym:"ALKEM",      side:"SELL", entry:"10:00", exit:"10:58", qty:54,  ep:5311.50, xp:5248.50, pnl:3252.05 },
+      { sym:"LODHA",      side:"SELL", entry:"10:00", exit:"10:55", qty:129, ep:853.45,  xp:834.10,  pnl:2409.59 },
+      { sym:"POWERGRID",  side:"SELL", entry:"10:00", exit:"10:50", qty:451, ep:298.20,  xp:292.70,  pnl:2385.18 },
+      { sym:"LODHA",      side:"SELL", entry:"10:00", exit:"10:58", qty:130, ep:853.45,  xp:837.60,  pnl:1973.61 },
+      { sym:"POWERGRID",  side:"SELL", entry:"10:00", exit:"10:58", qty:451, ep:298.20,  xp:292.90,  pnl:2294.98 },
+      { sym:"PHOENIXLTD", side:"SELL", entry:"10:15", exit:"10:58", qty:110, ep:1524.40, xp:1514.30, pnl:1003.67 },
+      { sym:"FORTIS",     side:"SELL", entry:"10:15", exit:"10:49", qty:138, ep:834.90,  xp:816.15,  pnl:2499.11 },
+      { sym:"FORTIS",     side:"SELL", entry:"10:15", exit:"10:58", qty:139, ep:834.90,  xp:814.55,  pnl:2739.98 },
+      { sym:"DLF",        side:"SELL", entry:"10:15", exit:"10:58", qty:393, ep:533.55,  xp:527.85,  pnl:2117.77 },
+      { sym:"OBEROIRLTY", side:"SELL", entry:"10:30", exit:"10:58", qty:135, ep:1419.00, xp:1404.10, pnl:1895.66 },
+      { sym:"PRESTIGE",   side:"SELL", entry:"10:30", exit:"10:58", qty:137, ep:1213.40, xp:1209.60, pnl:413.75 },
+      { sym:"TORNTPOWER", side:"SELL", entry:"10:30", exit:"10:58", qty:163, ep:1441.90, xp:1431.80, pnl:1514.82 },
+      { sym:"SUZLON",     side:"SELL", entry:"10:30", exit:"10:58", qty:4345,ep:40.85,   xp:40.94,   pnl:-502.01 },
+    ]
+  },
+  {
+    date: "17 Mar", day: "Tue", bias: "BULLISH",
+    sessionEnd: "15:10 ✅", anomaly: "Mixed signals — both BUY and SELL taken",
+    gross: -6020.60, charges: 1099.51, net: -7120.11,
+    trades: [
+      { sym:"MPHASIS",   side:"SELL", entry:"09:30", exit:"10:09", qty:122, ep:2042.50, xp:2057.50, pnl:-1966.80 },
+      { sym:"OFSS",      side:"SELL", entry:"09:30", exit:"10:18", qty:36,  ep:6274.50, xp:6308.00, pnl:-1334.39 },
+      { sym:"PREMIERENE",side:"BUY",  entry:"09:45", exit:"10:30", qty:245, ep:814.00,  xp:814.00,  pnl:-118.81 },
+      { sym:"MARUTI",    side:"BUY",  entry:"09:45", exit:"10:30", qty:16,  ep:13059.00,xp:12910.00,pnl:-2505.53 },
+      { sym:"EXIDEIND",  side:"BUY",  entry:"09:45", exit:"11:26", qty:862, ep:301.50,  xp:299.50,  pnl:-1864.02 },
+      { sym:"TVSMOTOR",  side:"BUY",  entry:"09:45", exit:"11:28", qty:78,  ep:3403.50, xp:3402.50, pnl:-220.50 },
+      { sym:"LT",        side:"BUY",  entry:"11:00", exit:"12:16", qty:73,  ep:3496.60, xp:3462.30, pnl:-2642.03 },
+      { sym:"APLAPOLLO", side:"BUY",  entry:"13:15", exit:"15:10", qty:179, ep:1945.90, xp:1966.60, pnl:3531.96 },
+    ]
+  },
+  {
+    date: "18 Mar", day: "Wed", bias: "BULLISH",
+    sessionEnd: "15:10 ✅", anomaly: "Only 1 trade — SL hit in 16 min",
+    gross: -2524.50, charges: 175.71, net: -2700.21,
+    trades: [
+      { sym:"EICHERMOT", side:"BUY", entry:"09:30", exit:"09:46", qty:51, ep:7057.50, xp:7008.00, pnl:-2700.21 },
+    ]
+  },
+  {
+    date: "19 Mar", day: "Thu", bias: "BEARISH",
+    sessionEnd: "15:10 ✅", anomaly: "",
+    gross: 6562.60, charges: 640.61, net: 5921.99,
+    trades: [
+      { sym:"HINDUNILVR",side:"SELL", entry:"09:30", exit:"13:36", qty:128, ep:2104.20, xp:2084.70, pnl:2352.27 },
+      { sym:"FORTIS",    side:"SELL", entry:"09:30", exit:"15:10", qty:338, ep:820.00,  xp:816.35,  pnl:1087.07 },
+      { sym:"HINDUNILVR",side:"SELL", entry:"09:30", exit:"15:10", qty:129, ep:2104.20, xp:2075.30, pnl:3583.70 },
+      { sym:"NESTLEIND", side:"SELL", entry:"09:30", exit:"15:10", qty:373, ep:1184.00, xp:1186.40, pnl:-1101.03 },
+    ]
+  },
+  {
+    date: "20 Mar", day: "Fri", bias: "BULLISH",
+    sessionEnd: "15:10 ✅", anomaly: "TataPower & IndusTower rejected; 3 live trades missed",
+    gross: -1313.00, charges: 184.88, net: -1497.88,
+    trades: [
+      { sym:"BIOCON", side:"BUY", entry:"13:30", exit:"14:33", qty:1010, ep:380.70, xp:379.40, pnl:-1497.88 },
+    ]
+  },
+];
+
+// ═══════════════════════════ KPI STRIP (computed from data) ═══════════════════
+(function() {
+  const totalTrades  = days.reduce((s,d) => s + d.trades.length, 0);
+  const totalGross   = days.reduce((s,d) => s + d.gross,   0);
+  const totalCharges = days.reduce((s,d) => s + d.charges, 0);
+  const totalNet     = days.reduce((s,d) => s + d.net,     0);
+  const wins         = days.filter(d => d.net > 0).length;
+  const losses       = days.filter(d => d.net < 0).length;
+  const bestDay      = days.reduce((a,d) => d.net > a.net ? d : a, days[0]);
+  const worstDay     = days.reduce((a,d) => d.net < a.net ? d : a, days[0]);
+
+  const set = (id, val, pos) => {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    el.className = 'value ' + (pos === true ? 'pos' : pos === false ? 'neg' : 'neu');
+  };
+
+  set('kpi-days',    days.length, null);
+  set('kpi-trades',  totalTrades, null);
+  set('kpi-gross',   fmtPnl(totalGross),   totalGross >= 0);
+  set('kpi-charges', '−₹' + totalCharges.toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2}), false);
+  set('kpi-net',     fmtPnl(totalNet),     totalNet >= 0);
+  set('kpi-wins',    wins + ' / ' + days.length, true);
+  set('kpi-losses',  losses + ' / ' + days.length, false);
+
+  const bd = document.getElementById('kpi-best');
+  bd.innerHTML = fmtPnl(bestDay.net) + '<span style="font-size:.8rem"> (' + bestDay.date + ')</span>';
+  bd.className = 'value pos';
+
+  const wd = document.getElementById('kpi-worst');
+  wd.innerHTML = fmtPnl(worstDay.net) + '<span style="font-size:.8rem"> (' + worstDay.date + ')</span>';
+  wd.className = 'value neg';
+  // Capital KPIs
+  const CAPITAL = 500000;
+  const tradingDays = days.length; // 15
+  const totalTradingDaysInYear = 252;
+  const roc = (totalNet / CAPITAL) * 100;
+  const annRoc = roc * (totalTradingDaysInYear / tradingDays);
+  const rocEl = document.getElementById('kpi-roc');
+  rocEl.textContent = (roc >= 0 ? '+' : '') + roc.toFixed(2) + '%';
+  rocEl.className = 'value ' + (roc >= 0 ? 'pos' : 'neg');
+  const annEl = document.getElementById('kpi-ann');
+  annEl.textContent = (annRoc >= 0 ? '+' : '') + annRoc.toFixed(1) + '%';
+  annEl.className = 'value ' + (annRoc >= 0 ? 'pos' : 'neg');
+})();
+
+// ═══════════════════════════ RENDER SUMMARY TABLE ═══════════════════════════
+const summaryBody = document.getElementById('summaryBody');
+let cumulative = 0;
+days.forEach(d => {
+  cumulative += d.net;
+  const pnlClass = d.net > 0 ? 'pnl-pos' : d.net < 0 ? 'pnl-neg' : 'pnl-zero';
+  const grossCls = d.gross > 0 ? 'pnl-pos' : d.gross < 0 ? 'pnl-neg' : 'pnl-zero';
+  summaryBody.innerHTML += `
+    <tr>
+      <td><strong>${d.date}</strong></td>
+      <td>${d.day}</td>
+      <td>${biasBadge(d.bias)}</td>
+      <td style="text-align:center">${d.trades.length || '–'}</td>
+      <td class="${grossCls}">${fmtPnl(d.gross)}</td>
+      <td style="color:var(--muted)">${d.charges > 0 ? '−₹'+d.charges.toFixed(0) : '–'}</td>
+      <td class="${pnlClass}" style="font-weight:700">${fmtPnl(d.net)}</td>
+      <td>${d.sessionEnd}</td>
+      <td style="font-size:0.75rem; color:var(--muted)">${d.anomaly || '—'}</td>
+    </tr>`;
+});
+// Totals
+const totalGross = days.reduce((a,d) => a+d.gross,0);
+const totalCharges = days.reduce((a,d) => a+d.charges,0);
+const totalNet = days.reduce((a,d) => a+d.net,0);
+summaryBody.innerHTML += `
+  <tr style="background:rgba(88,166,255,.08); font-weight:700; border-top:2px solid var(--accent)">
+    <td colspan="4" style="text-align:right; color:var(--accent)">TOTAL (15 days)</td>
+    <td class="${totalGross>0?'pnl-pos':'pnl-neg'}">${fmtPnl(totalGross)}</td>
+    <td style="color:var(--muted)">−₹${totalCharges.toFixed(0)}</td>
+    <td class="${totalNet>0?'pnl-pos':'pnl-neg'}">${fmtPnl(totalNet)}</td>
+    <td colspan="2"></td>
+  </tr>`;
+
+function biasBadge(b) {
+  const map = {BEARISH:'tag-red',BULLISH:'tag-green',MIXED:'tag-yellow',MISSED:'tag-red'};
+  return `<span class="tag ${map[b]||'tag-blue'}">${b}</span>`;
+}
+function fmtPnl(v) {
+  return (v>=0?'+₹':'-₹') + Math.abs(v).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// ═══════════════════════════ HEATMAP ═══════════════════════════
+const heatmap = document.getElementById('heatmap');
+days.forEach((d,i) => {
+  const maxAbs = Math.max(...days.map(x=>Math.abs(x.net)),1);
+  const intensity = Math.min(Math.abs(d.net)/maxAbs, 1);
+  const bgColor = d.net === 0
+    ? 'rgba(88,166,255,0.08)'
+    : d.net > 0
+      ? `rgba(63,185,80,${0.1 + intensity*0.55})`
+      : `rgba(248,81,73,${0.1 + intensity*0.55})`;
+  const textColor = d.net > 0 ? '#3fb950' : d.net < 0 ? '#f85149' : '#58a6ff';
+  heatmap.innerHTML += `
+    <div class="hm-cell" style="background:${bgColor}; border-color:${textColor}33"
+         onclick="showTab('daywise'); scrollToDay(${i})">
+      <div class="hm-date">${d.date}</div>
+      <div class="hm-val" style="color:${textColor}">${d.net===0?'₹0':fmtPnl(d.net)}</div>
+    </div>`;
+});
+
+// ═══════════════════════════ DAY CARDS ═══════════════════════════
+const dayGrid = document.getElementById('dayGrid');
+days.forEach((d, idx) => {
+  const netCls = d.net > 0 ? 'badge-pos' : d.net < 0 ? 'badge-neg' : 'badge-zero';
+  let tradesHtml = '';
+  if (d.trades.length > 0) {
+    tradesHtml += `<table class="trade-table">
+      <thead><tr><th>Symbol</th><th>Side</th><th>Entry Time</th><th>Exit Time</th><th>Qty</th><th>Entry ₹</th><th>Exit ₹</th><th>P&amp;L ₹</th></tr></thead>
+      <tbody>`;
+    d.trades.forEach(t => {
+      const pc = t.pnl > 0 ? 'pnl-pos' : t.pnl < 0 ? 'pnl-neg' : 'pnl-zero';
+      const sc = t.side === 'BUY' ? 'side-buy' : 'side-sell';
+      tradesHtml += `<tr>
+        <td style="font-weight:600">${t.sym}</td>
+        <td class="${sc}">${t.side}</td>
+        <td>${t.entry}</td>
+        <td>${t.exit}</td>
+        <td>${t.qty.toLocaleString()}</td>
+        <td>${t.ep.toFixed(2)}</td>
+        <td>${t.xp.toFixed(2)}</td>
+        <td class="${pc}" style="font-weight:700">${t.pnl>=0?'+':''}${t.pnl.toFixed(2)}</td>
+      </tr>`;
+    });
+    tradesHtml += `</tbody></table>`;
+    tradesHtml += `<div class="trade-table" style="display:flex;gap:16px;padding:8px 0;font-size:0.8rem">
+      <span style="color:var(--muted)">Gross: <strong>${fmtPnl(d.gross)}</strong></span>
+      <span style="color:var(--muted)">Charges: <strong>₹${d.charges.toFixed(2)}</strong></span>
+      <span style="color:${d.net>=0?'var(--green)':'var(--red)'}">NET: <strong>${fmtPnl(d.net)}</strong></span>
+    </div>`;
+  } else {
+    tradesHtml = `<p style="color:var(--muted); font-size:0.82rem; padding:8px 0">⚠️ No trades taken — script started late and missed market hours.</p>`;
+  }
+
+  dayGrid.innerHTML += `
+    <div class="day-card" id="day-${idx}">
+      <div class="card-header" onclick="toggleCard(${idx})">
+        <div class="date-label">${d.date} (${d.day})</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="net-badge ${netCls}">${fmtPnl(d.net)}</span>
+          <span class="toggle-arrow" id="arrow-${idx}">▶</span>
+        </div>
+      </div>
+      <div class="card-meta">
+        <span>${biasBadge(d.bias)}</span>
+        <span>📊 ${d.trades.length} trade${d.trades.length!==1?'s':''}</span>
+        <span>🕐 End: ${d.sessionEnd}</span>
+        ${d.anomaly ? `<span style="color:var(--yellow)">⚠️ ${d.anomaly}</span>` : ''}
+      </div>
+      <div class="card-body" id="body-${idx}">${tradesHtml}</div>
+    </div>`;
+});
+
+function toggleCard(idx) {
+  const body = document.getElementById('body-' + idx);
+  const arrow = document.getElementById('arrow-' + idx);
+  const open = body.classList.toggle('open');
+  arrow.classList.toggle('open', open);
+}
+
+function scrollToDay(idx) {
+  setTimeout(() => {
+    const el = document.getElementById('day-' + idx);
+    if (el) { el.scrollIntoView({behavior:'smooth', block:'center'}); toggleCard(idx); }
+  }, 100);
+}
+
+// ═══════════════════════════ CHART ═══════════════════════════
+(function() {
+  const canvas = document.getElementById('pnlChart');
+  const ctx = canvas.getContext('2d');
+  const labels = days.map(d => d.date);
+  const nets   = days.map(d => d.net);
+  let cumPnl = 0;
+  const cumData = nets.map(n => { cumPnl += n; return +cumPnl.toFixed(2); });
+  const barColors = nets.map(n => n >= 0 ? 'rgba(63,185,80,0.7)' : 'rgba(248,81,73,0.7)');
+
+  const W = canvas.offsetWidth || 900;
+  canvas.width = W * window.devicePixelRatio;
+  canvas.height = 280 * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+  const padL = 70, padR = 20, padT = 30, padB = 50;
+  const w = W - padL - padR;
+  const h = 280 - padT - padB;
+  const n = days.length;
+  const barW = (w / n) * 0.45;
+
+  const allVals = [...nets, ...cumData];
+  const minV = Math.min(...allVals);
+  const maxV = Math.max(...allVals);
+  const range = maxV - minV || 1;
+  const scale = v => padT + h - ((v - minV) / range) * h;
+  const zero = scale(0);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(48,54,61,0.8)';
+  ctx.lineWidth = 0.5;
+  for (let i = 0; i <= 5; i++) {
+    const y = padT + (h / 5) * i;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + w, y); ctx.stroke();
+    const val = maxV - (range / 5) * i;
+    ctx.fillStyle = '#8b949e'; ctx.font = '10px Segoe UI';
+    ctx.textAlign = 'right';
+    ctx.fillText((val >= 0 ? '+' : '') + Math.round(val / 1000) + 'K', padL - 5, y + 3);
+  }
+
+  // Zero line
+  ctx.strokeStyle = 'rgba(88,166,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(padL, zero); ctx.lineTo(padL + w, zero); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Bars
+  days.forEach((d, i) => {
+    const x = padL + (w / n) * i + (w / n) * 0.5 - barW / 2;
+    const y0 = scale(Math.max(d.net, 0));
+    const y1 = scale(Math.min(d.net, 0));
+    ctx.fillStyle = barColors[i];
+    ctx.fillRect(x, d.net >= 0 ? y0 : zero, barW, Math.abs(y1 - y0) || 2);
+  });
+
+  // Cumulative line
+  ctx.strokeStyle = '#58a6ff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  cumData.forEach((v, i) => {
+    const x = padL + (w / n) * i + (w / n) * 0.5;
+    const y = scale(v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  // Dots
+  cumData.forEach((v, i) => {
+    const x = padL + (w / n) * i + (w / n) * 0.5;
+    const y = scale(v);
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = '#58a6ff';
+    ctx.fill();
+  });
+
+  // X-axis labels
+  ctx.fillStyle = '#8b949e'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'center';
+  days.forEach((d, i) => {
+    const x = padL + (w / n) * i + (w / n) * 0.5;
+    ctx.fillText(d.date, x, padT + h + 16);
+  });
+
+  // Legend
+  ctx.fillStyle = 'rgba(63,185,80,0.7)'; ctx.fillRect(padL, padT - 20, 12, 10);
+  ctx.fillStyle = '#e6edf3'; ctx.font = '10px Segoe UI'; ctx.textAlign = 'left';
+  ctx.fillText('Daily P&L', padL + 15, padT - 12);
+  ctx.strokeStyle = '#58a6ff'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(padL + 90, padT - 16); ctx.lineTo(padL + 102, padT - 16); ctx.stroke();
+  ctx.fillText('Cumulative P&L', padL + 105, padT - 12);
+})();
+
+// ═══════════════════════════ TABS ═══════════════════════════
+function showTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  const btns = document.querySelectorAll('.tab-btn');
+  const map = {overview:0, daywise:1, anomalies:2, march20:3, reco:4};
+  if (map[id] !== undefined) btns[map[id]].classList.add('active');
+}
+</script>
+<div id="tab-reco"class="tab-pane">
+<section>
+<h2>💡 Profitability Recommendations</h2>
+<p style="color:var(--muted);font-size:0.9rem;">Based on deep analysis of all 15 days of logs (Mar 2–20) <strong>and</strong> source code review of <code>nidhi_sudarshan_pro_final_old.py</code>. Issues are ranked by estimated profit impact.</p>
+
+<!-- ═══ STAT CARDS ═══ -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0">
+  <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border-left:4px solid #e74c3c">
+    <div style="font-size:1.6rem;font-weight:700;color:#e74c3c">24%</div>
+    <div style="font-size:0.78rem;color:var(--muted)">BUY Win Rate<br>(29 trades, -₹23,067)</div>
+  </div>
+  <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border-left:4px solid #2ecc71">
+    <div style="font-size:1.6rem;font-weight:700;color:#2ecc71">73%</div>
+    <div style="font-size:0.78rem;color:var(--muted)">SELL Win Rate<br>(37 trades, +₹27,454)</div>
+  </div>
+  <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border-left:4px solid #e74c3c">
+    <div style="font-size:1.6rem;font-weight:700;color:#e74c3c">41%</div>
+    <div style="font-size:0.78rem;color:var(--muted)">9:30 Win Rate<br>(22 trades, -₹15,237)</div>
+  </div>
+  <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border-left:4px solid #2ecc71">
+    <div style="font-size:1.6rem;font-weight:700;color:#2ecc71">73%</div>
+    <div style="font-size:0.78rem;color:var(--muted)">10:00 Win Rate<br>(11 trades, +₹13,173)</div>
+  </div>
+  <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border-left:4px solid #f39c12">
+    <div style="font-size:1.6rem;font-weight:700;color:#f39c12">33%</div>
+    <div style="font-size:0.78rem;color:var(--muted)">Gross eaten by charges<br>(₹11,458 / ₹34,831)</div>
+  </div>
+  <div style="background:var(--card);border-radius:8px;padding:14px;text-align:center;border-left:4px solid #e74c3c">
+    <div style="font-size:1.6rem;font-weight:700;color:#e74c3c">775</div>
+    <div style="font-size:0.78rem;color:var(--muted)">Sector filter rejections<br>(#1 rejection reason)</div>
+  </div>
+</div>
+
+<!-- ═══ ENTRY TIME TABLE ═══ -->
+<h3 style="margin-top:24px">📊 Entry Time Win-Rate Breakdown</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.85rem;margin-bottom:24px">
+  <thead><tr style="background:var(--card);color:var(--muted);text-align:left">
+    <th style="padding:8px 10px">Entry Slot</th><th style="padding:8px 10px">Trades</th><th style="padding:8px 10px">Wins</th><th style="padding:8px 10px">Losses</th><th style="padding:8px 10px">Win %</th><th style="padding:8px 10px">Total PnL</th><th style="padding:8px 10px">Verdict</th>
+  </tr></thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">09:30</td><td style="padding:7px 10px">22</td><td style="padding:7px 10px;color:#2ecc71">9</td><td style="padding:7px 10px;color:#e74c3c">13</td><td style="padding:7px 10px;color:#e74c3c"><strong>41%</strong></td><td style="padding:7px 10px;color:#e74c3c">-₹15,237</td><td style="padding:7px 10px">⚠️ Worst slot — regime unconfirmed</td></tr>
+    <tr style="border-bottom:1px solid var(--border);background:rgba(46,204,113,0.05)"><td style="padding:7px 10px">09:45</td><td style="padding:7px 10px">7</td><td style="padding:7px 10px;color:#2ecc71">5</td><td style="padding:7px 10px;color:#e74c3c">2</td><td style="padding:7px 10px;color:#2ecc71"><strong>71%</strong></td><td style="padding:7px 10px;color:#2ecc71">+₹6,195</td><td style="padding:7px 10px">✅ Excellent</td></tr>
+    <tr style="border-bottom:1px solid var(--border);background:rgba(46,204,113,0.08)"><td style="padding:7px 10px">10:00</td><td style="padding:7px 10px">11</td><td style="padding:7px 10px;color:#2ecc71">8</td><td style="padding:7px 10px;color:#e74c3c">3</td><td style="padding:7px 10px;color:#2ecc71"><strong>73%</strong></td><td style="padding:7px 10px;color:#2ecc71">+₹13,173</td><td style="padding:7px 10px">✅ Best slot by PnL</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">10:15</td><td style="padding:7px 10px">4</td><td style="padding:7px 10px;color:#2ecc71">2</td><td style="padding:7px 10px;color:#e74c3c">2</td><td style="padding:7px 10px;color:#f39c12"><strong>50%</strong></td><td style="padding:7px 10px;color:#2ecc71">+₹1,816</td><td style="padding:7px 10px">⚪ Neutral</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">10:30</td><td style="padding:7px 10px">7</td><td style="padding:7px 10px;color:#2ecc71">2</td><td style="padding:7px 10px;color:#e74c3c">5</td><td style="padding:7px 10px;color:#e74c3c"><strong>29%</strong></td><td style="padding:7px 10px;color:#e74c3c">-₹3,584</td><td style="padding:7px 10px">⚠️ Avoid — late breakout chasing</td></tr>
+    <tr style="border-bottom:1px solid var(--border);background:rgba(46,204,113,0.05)"><td style="padding:7px 10px">10:45</td><td style="padding:7px 10px">6</td><td style="padding:7px 10px;color:#2ecc71">4</td><td style="padding:7px 10px;color:#e74c3c">2</td><td style="padding:7px 10px;color:#2ecc71"><strong>67%</strong></td><td style="padding:7px 10px;color:#2ecc71">+₹934</td><td style="padding:7px 10px">✅ Good</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">13:00+</td><td style="padding:7px 10px">8</td><td style="padding:7px 10px;color:#2ecc71">3</td><td style="padding:7px 10px;color:#e74c3c">5</td><td style="padding:7px 10px;color:#e74c3c"><strong>38%</strong></td><td style="padding:7px 10px;color:#e74c3c">-₹202</td><td style="padding:7px 10px">⚠️ Poor — 14:00 squeeze kills these immediately</td></tr>
+  </tbody>
+</table>
+
+<!-- ═══ RECOMMENDATIONS LIST ═══ -->
+<h3>🔧 Recommendations by Priority</h3>
+
+<!-- R1 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #e74c3c">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">🐛 R1 — Fix CONFIG Bug: NEUTRAL Wick Tolerance (Code Error)</strong>
+    <span style="background:#e74c3c22;color:#e74c3c;border-radius:4px;padding:2px 8px;font-size:0.78rem">CRITICAL BUG</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">In the source code, <code>NEUTRAL_WICK_TOLERANCE = 0.30</code> and <code>TREND_WICK_TOLERANCE = 0.30</code> — <strong>both are identical</strong>. The code comment says "Max 15% wick allowed in neutral market" but the value is 0.30. Neutral markets should require <em>stricter</em> candle quality, not the same as trending markets.</p>
+  <div style="background:#1a1a2e;border-radius:6px;padding:10px;font-size:0.82rem;font-family:monospace;color:#a8d8ea">
+    <span style="color:#e74c3c"># BUG — both same:</span><br>
+    "NEUTRAL_WICK_TOLERANCE": 0.30,  <span style="color:#666"># comment says 15%!</span><br>
+    "TREND_WICK_TOLERANCE":  0.30,<br><br>
+    <span style="color:#2ecc71"># FIX — tighten neutral:</span><br>
+    "NEUTRAL_WICK_TOLERANCE": 0.20,  <span style="color:#666"># stricter in choppy market</span><br>
+    "TREND_WICK_TOLERANCE":  0.35,   <span style="color:#666"># more lenient in strong trends</span>
+  </div>
+</div>
+
+<!-- R2 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #e74c3c">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">🐛 R2 — Fix CONFIG Bug: NEUTRAL Volume Multiplier (Code Error)</strong>
+    <span style="background:#e74c3c22;color:#e74c3c;border-radius:4px;padding:2px 8px;font-size:0.78rem">CRITICAL BUG</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">The code comment on <code>NEUTRAL_MIN_VOLUME_MULT</code> says <em>"Require 2.5x volume in neutral market"</em> but the actual value is <code>1.5</code> — identical to <code>MIN_VOLUME_MULT</code>. Neutral/choppy markets should demand higher volume confirmation to filter out low-quality breakouts.</p>
+  <div style="background:#1a1a2e;border-radius:6px;padding:10px;font-size:0.82rem;font-family:monospace;color:#a8d8ea">
+    <span style="color:#e74c3c"># BUG — comment says 2.5x, code says 1.5x:</span><br>
+    "NEUTRAL_MIN_VOLUME_MULT": 1.5,<br><br>
+    <span style="color:#2ecc71"># FIX:</span><br>
+    "NEUTRAL_MIN_VOLUME_MULT": 2.0,  <span style="color:#666"># stronger vol confirmation in chop</span>
+  </div>
+</div>
+
+<!-- R3 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #e74c3c">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">📉 R3 — BUY Signals Need Extra Confirmation Gate</strong>
+    <span style="background:#e74c3c22;color:#e74c3c;border-radius:4px;padding:2px 8px;font-size:0.78rem">HIGH IMPACT</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">Over 15 days: <strong>BUY trades won only 24%</strong> of the time (7 wins / 29 trades, net -₹23,067). SELL trades won 73% (27/37, net +₹27,454). BUY signals are generating massive losses while SELL signals drive all the profit. This asymmetry is stark and cannot be ignored — March was a downtrend month. 
+  <br><br>Suggestions: (a) Add a second regime confirmation for BUY: require both NSE official A/D > 0.65 <em>and</em> the stock's sector must be green on the day. (b) Increase <code>BREAKOUT_BUFFER</code> for BUY signals only — this reduces false PDH breakouts. (c) For BUY signals, additionally require price > 20-period VWAP (currently VWAP check only rejects if below VWAP, which is already done — but could strengthen it).</p>
+</div>
+
+<!-- R4 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #f39c12">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">⏰ R4 — Remove 09:30 Scan Slot (or Add Regime Stability Gate)</strong>
+    <span style="background:#f39c1222;color:#f39c12;border-radius:4px;padding:2px 8px;font-size:0.78rem">HIGH IMPACT</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">The 09:30 scan is the largest single source of losses: 22 trades, 41% win rate, -₹15,237 net. At 09:30 the market regime is determined by NSE A/D data from 3 minutes earlier (09:27 last check). This data is often stale/transitional at open. On Mar 10, the bot took BUY entries at 09:30 — market turned BEARISH at 09:32. On Mar 6, same pattern.
+  <br><br><strong>Option A (Simple):</strong> Remove "09:30" from <code>SCAN_TIMES</code> — let the first scan be 09:45 after one candle of regime confirmation.<br>
+  <strong>Option B (Smarter):</strong> Add a <code>regime_stable_since</code> timestamp. Only allow new entries if regime has been unchanged for ≥ 6 minutes (2 scheduler ticks).</p>
+  <div style="background:#1a1a2e;border-radius:6px;padding:10px;font-size:0.82rem;font-family:monospace;color:#a8d8ea">
+    <span style="color:#2ecc71"># Option A — simplest fix:</span><br>
+    "SCAN_TIMES": ["09:45", "10:00", "10:15", "10:30", "10:45", "11:00", "13:00", "13:15", "13:30"],
+  </div>
+</div>
+
+<!-- R5 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #f39c12">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">🕐 R5 — Remove or Restrict 13:00–13:30 Scan Slots</strong>
+    <span style="background:#f39c1222;color:#f39c12;border-radius:4px;padding:2px 8px;font-size:0.78rem">HIGH IMPACT</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">Afternoon scan slots (13:00, 13:15, 13:30) return 38% win rate and break even (-₹202 net). More critically: the Veteran Time Defense triggers at <strong>14:00</strong> — trades entered at 13:30 are squeezed aggressively only 30 minutes after entry. BIOCON was entered at 13:30 on Mar 20 and immediately squeezed at 14:00, converting a potential runner into a SL-hit. PREMIERENE was entered at 13:00 Mar 5 — hit SL in 7 minutes.
+  <br><br>Suggestion: Move Veteran Time Defense to 13:30 (90 min before close) OR remove 13:00–13:30 from SCAN_TIMES. Only allow afternoon entries if there are 0 open positions (to allow fresh momentum plays but not add to existing risk).</p>
+  <div style="background:#1a1a2e;border-radius:6px;padding:10px;font-size:0.82rem;font-family:monospace;color:#a8d8ea">
+    <span style="color:#2ecc71"># Option: Move Veteran Defense earlier</span><br>
+    if now.hour >= 13 and now.minute >= 30:  <span style="color:#666"># was: hour >= 14</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;pos = apply_veteran_time_defense(sym, pos, ltp)
+  </div>
+</div>
+
+<!-- R6 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #f39c12">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">🏛️ R6 — Expand Sector Filter from Top 5 → Top 7</strong>
+    <span style="background:#f39c1222;color:#f39c12;border-radius:4px;padding:2px 8px;font-size:0.78rem">MEDIUM IMPACT</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">The sector filter generated <strong>775 rejections</strong> — the single largest rejection reason by far (more than all other filters combined). Top 5 out of ~20 tracked sectors means only 25% of sectors can produce setups on any given day. TataPower was rejected Mar 20 purely because NSE:NIFTYENERGY-INDEX was ranked #6 that day.
+  <br><br>Expanding to Top 7 increases the candidate pool by ~40% while keeping the filter meaningful. For SELL signals specifically (where win rate is 73%), being slightly more permissive is statistically justified.</p>
+  <div style="background:#1a1a2e;border-radius:6px;padding:10px;font-size:0.82rem;font-family:monospace;color:#a8d8ea">
+    <span style="color:#e74c3c"># Current (too restrictive):</span><br>
+    top_secs = [format_sector_symbol(x[0]) for x in sorted_secs[:5]]<br>
+    bot_secs = [format_sector_symbol(x[0]) for x in sorted_secs[-5:]]<br><br>
+    <span style="color:#2ecc71"># Fix — or make configurable:</span><br>
+    "SECTOR_FILTER_N": 7,  <span style="color:#666"># add to CONFIG</span><br>
+    top_secs = [format_sector_symbol(x[0]) for x in sorted_secs[:CONFIG['SECTOR_FILTER_N']]]
+  </div>
+</div>
+
+<!-- R7 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #f39c12">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">⚡ R7 — Add Regime Stability Gate Before New Entries</strong>
+    <span style="background:#f39c1222;color:#f39c12;border-radius:4px;padding:2px 8px;font-size:0.78rem">MEDIUM IMPACT</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">The sentiment scheduler runs every 3 minutes. On volatile days (Mar 5, 6, 10, 12), regime shifted multiple times per hour. The scanner runs at fixed times and doesn't check if regime just changed. On Mar 10: BUY entries at 09:30, regime flipped BEARISH at 09:32 — 2 minutes later. The "regime_squeezed" flag then tightened SL 50%, but both trades still hit SL.
+  <br><br>Add a global <code>regime_stable_since</code> timestamp. In <code>run_scanner()</code>, skip new BUY/SELL entries if regime changed within the last 6 minutes (2 checks).</p>
+  <div style="background:#1a1a2e;border-radius:6px;padding:10px;font-size:0.82rem;font-family:monospace;color:#a8d8ea">
+    <span style="color:#2ecc71"># In run_sentiment_scheduler():</span><br>
+    if market_regime != new_regime:<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;regime_stable_since = time.time()  <span style="color:#666"># reset clock</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;market_regime = new_regime<br><br>
+    <span style="color:#2ecc71"># In run_scanner(), add gate at top:</span><br>
+    if (time.time() - regime_stable_since) &lt; 360:  <span style="color:#666"># &lt; 6 min</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;log_print("⏸️ Regime unstable. Skipping scan.")<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;return
+  </div>
+</div>
+
+<!-- R8 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #3498db">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">🔑 R8 — Auto Token Refresh to Prevent Missed Sessions</strong>
+    <span style="background:#3498db22;color:#3498db;border-radius:4px;padding:2px 8px;font-size:0.78rem">OPERATIONAL</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">On <strong>Mar 3</strong>, the bot started at 13:34 instead of 09:30 — missing the entire profitable morning. The fyersDataSocket logs show recurring <code>403 Forbidden</code> WebSocket errors (most recently Mar 20–21) indicating overnight token expiry. Mar 3 was likely a complete session miss due to this pattern.
+  <br><br>The file <code>nidhi_generate_token.py</code> already exists in the same folder. Schedule it to run automatically at 08:45 IST via Windows Task Scheduler so a fresh token is always ready before market open. This single fix could recover ₹3,000–5,000+ of missed profitable days annually.</p>
+</div>
+
+<!-- R9 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #3498db">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">📉 R9 — Reduce MAX_TRADES_ACTIVE to Concentrate Capital</strong>
+    <span style="background:#3498db22;color:#3498db;border-radius:4px;padding:2px 8px;font-size:0.78rem">RISK MANAGEMENT</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px"><code>MAX_TRADES_ACTIVE = 10</code> allows 10 concurrent positions. On Mar 6, 9 positions were opened. When regime turned BEARISH mid-day, all 9 were in drawdown simultaneously — amplifying the -₹9,563 loss day. Concentrating on 4–5 highest-RVOL candidates (already ranked by RVOL in the code) would reduce correlated drawdowns. The candidates are already sorted by RVOL — just take fewer of them.</p>
+  <div style="background:#1a1a2e;border-radius:6px;padding:10px;font-size:0.82rem;font-family:monospace;color:#a8d8ea">
+    <span style="color:#2ecc71"># Reduce concurrent exposure:</span><br>
+    "MAX_TRADES_ACTIVE": 5,  <span style="color:#666"># was 10</span>
+  </div>
+</div>
+
+<!-- R10 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #3498db">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">💸 R10 — Reduce Charges via Better Trade Selection</strong>
+    <span style="background:#3498db22;color:#3498db;border-radius:4px;padding:2px 8px;font-size:0.78rem">COST OPTIMIZATION</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">Charges consumed <strong>₹11,458 = 33% of gross profit</strong> over 15 days. This is because 93 trades × high-qty positions create significant STT + brokerage. The recommendations above (removing 09:30 scan, removing 13:00+ scan, reducing MAX_TRADES_ACTIVE to 5) would collectively reduce trade count by ~30–40%, directly improving the gross→net conversion. Fewer, higher-conviction trades = lower charge drag = higher net retention.</p>
+</div>
+
+<!-- R11 -->
+<div style="background:var(--card);border-radius:10px;padding:18px;margin-bottom:14px;border-left:5px solid #9b59b6">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <strong style="font-size:1rem">🎯 R11 — ATR-Based SL Uses Stale ATR (Minor Improvement)</strong>
+    <span style="background:#9b59b622;color:#9b59b6;border-radius:4px;padding:2px 8px;font-size:0.78rem">MINOR</span>
+  </div>
+  <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">The SL is calculated as <code>ATR * 1.5</code> using Wilder's 14-period ATR on 15-min candles from 7 days of history. The average SL distance observed was only <strong>0.509%</strong>. For stocks priced ₹500–₹3000, this translates to ₹2.50–₹15 — extremely tight. On slow/consolidating stocks (HINDALCO, COLPAL), trades held 200–295 minutes before hitting this tiny SL.
+  <br><br>Consider: <code>SL = max(ATR * 1.5, price * 0.007)</code> — a 0.7% minimum SL floor. This prevents extremely tight SLs on low-volatility stocks that lead to noise-exits followed by the position reversing in your favour.</p>
+  <div style="background:#1a1a2e;border-radius:6px;padding:10px;font-size:0.82rem;font-family:monospace;color:#a8d8ea">
+    <span style="color:#2ecc71"># In run_scanner(), replace:</span><br>
+    sl_distance = atr_value * 1.5<br><br>
+    <span style="color:#2ecc71"># With:</span><br>
+    min_sl = last_candle['close'] * 0.007  <span style="color:#666"># 0.7% floor</span><br>
+    sl_distance = max(atr_value * 1.5, min_sl)
+  </div>
+</div>
+
+<!-- SUMMARY TABLE -->
+<h3 style="margin-top:28px">📋 Implementation Priority Matrix</h3>
+<table style="width:100%;border-collapse:collapse;font-size:0.84rem">
+  <thead><tr style="background:var(--card);color:var(--muted)">
+    <th style="padding:8px 10px;text-align:left">Rec</th>
+    <th style="padding:8px 10px">Type</th>
+    <th style="padding:8px 10px">Effort</th>
+    <th style="padding:8px 10px">Est. Impact</th>
+    <th style="padding:8px 10px;text-align:left">Action</th>
+  </tr></thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R1 — Wick Tolerance Bug</td><td style="padding:7px 10px;text-align:center">🐛 Bug</td><td style="padding:7px 10px;text-align:center">5 min</td><td style="padding:7px 10px;text-align:center;color:#e74c3c">High</td><td style="padding:7px 10px">Change 1 CONFIG value</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R2 — Volume Bug</td><td style="padding:7px 10px;text-align:center">🐛 Bug</td><td style="padding:7px 10px;text-align:center">5 min</td><td style="padding:7px 10px;text-align:center;color:#e74c3c">High</td><td style="padding:7px 10px">Change 1 CONFIG value</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R3 — BUY extra gate</td><td style="padding:7px 10px;text-align:center">🧠 Logic</td><td style="padding:7px 10px;text-align:center">1–2 hr</td><td style="padding:7px 10px;text-align:center;color:#e74c3c">Very High</td><td style="padding:7px 10px">Add condition in run_scanner()</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R4 — Remove 09:30 scan</td><td style="padding:7px 10px;text-align:center">⚙️ Config</td><td style="padding:7px 10px;text-align:center">2 min</td><td style="padding:7px 10px;text-align:center;color:#f39c12">High</td><td style="padding:7px 10px">Remove from SCAN_TIMES list</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R5 — Remove 13:00+ scan</td><td style="padding:7px 10px;text-align:center">⚙️ Config</td><td style="padding:7px 10px;text-align:center">2 min</td><td style="padding:7px 10px;text-align:center;color:#f39c12">High</td><td style="padding:7px 10px">Remove from SCAN_TIMES list</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R6 — Sector Top 7</td><td style="padding:7px 10px;text-align:center">⚙️ Config</td><td style="padding:7px 10px;text-align:center">10 min</td><td style="padding:7px 10px;text-align:center;color:#f39c12">Medium</td><td style="padding:7px 10px">Add SECTOR_FILTER_N=7 to CONFIG</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R7 — Regime stability gate</td><td style="padding:7px 10px;text-align:center">🧠 Logic</td><td style="padding:7px 10px;text-align:center">30 min</td><td style="padding:7px 10px;text-align:center;color:#f39c12">Medium</td><td style="padding:7px 10px">Add regime_stable_since global</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R8 — Auto token refresh</td><td style="padding:7px 10px;text-align:center">🔧 Ops</td><td style="padding:7px 10px;text-align:center">20 min</td><td style="padding:7px 10px;text-align:center;color:#3498db">Ops</td><td style="padding:7px 10px">Task Scheduler at 08:45 IST</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R9 — Max active 5</td><td style="padding:7px 10px;text-align:center">⚙️ Config</td><td style="padding:7px 10px;text-align:center">2 min</td><td style="padding:7px 10px;text-align:center;color:#f39c12">Medium</td><td style="padding:7px 10px">Change MAX_TRADES_ACTIVE=5</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R10 — Reduce charges</td><td style="padding:7px 10px;text-align:center">📊 Result</td><td style="padding:7px 10px;text-align:center">—</td><td style="padding:7px 10px;text-align:center;color:#2ecc71">Auto</td><td style="padding:7px 10px">R4+R5+R9 deliver this naturally</td></tr>
+    <tr style="border-bottom:1px solid var(--border)"><td style="padding:7px 10px">R11 — ATR SL floor</td><td style="padding:7px 10px;text-align:center">🧠 Logic</td><td style="padding:7px 10px;text-align:center">15 min</td><td style="padding:7px 10px;text-align:center;color:#9b59b6">Low</td><td style="padding:7px 10px">1-line change in run_scanner()</td></tr>
+  </tbody>
+</table>
+
+<!-- QUICK WINS BOX -->
+<div style="background:rgba(46,204,113,0.08);border:1px solid rgba(46,204,113,0.3);border-radius:10px;padding:16px;margin-top:24px">
+  <strong style="color:#2ecc71">⚡ Quick Wins — Do These First (under 30 minutes total, highest leverage):</strong>
+  <ol style="color:var(--muted);font-size:0.85rem;margin-top:8px;padding-left:20px;line-height:1.8">
+    <li>Change <code>NEUTRAL_WICK_TOLERANCE</code> from 0.30 → 0.20 (R1)</li>
+    <li>Change <code>NEUTRAL_MIN_VOLUME_MULT</code> from 1.5 → 2.0 (R2)</li>
+    <li>Remove <code>"09:30"</code> from SCAN_TIMES (R4)</li>
+    <li>Remove <code>"13:00", "13:15", "13:30"</code> from SCAN_TIMES (R5)</li>
+    <li>Change <code>MAX_TRADES_ACTIVE</code> from 10 → 5 (R9)</li>
+    <li>Schedule <code>nidhi_generate_token.py</code> via Task Scheduler at 08:45 (R8)</li>
+  </ol>
+  <p style="color:var(--muted);font-size:0.82rem;margin:8px 0 0">These 6 changes together touch 4 lines of code + 1 scheduled task. Based on the 15-day data, they could realistically improve net PnL by <strong>30–45%</strong> by eliminating the worst loss clusters while keeping the profitable 09:45–11:00 window intact.</p>
+</div>
+</section>
+</div>
+</body>
+</html>
