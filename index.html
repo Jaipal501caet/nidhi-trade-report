@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nidhi Bot — Trade Analysis Report (Mar 2–23, 2026)</title>
+  <title>Sudarshan Bot 15M — Trade Analysis Report (Mar 2–23, 2026)</title>
   <style>
     :root {
       --bg: #0d1117;
@@ -179,7 +179,7 @@
 <body>
 
 <header>
-  <h1>📊 Nidhi Bot — Trade Analysis Report</h1>
+  <h1>📊 Sudarshan Bot — Trade Analysis Report</h1>
   <p>Period: 2 March 2026 – 23 March 2026 &nbsp;|&nbsp; All figures in ₹ &nbsp;|&nbsp; Paper Trading</p>
 </header>
 
@@ -406,117 +406,7 @@
   </section>
 </div>
 
-<!-- ═══════════ TAB: MARCH 20 ═══════════ -->
-<div id="tab-march20" class="tab-pane">
-  <section>
-    <h2>🔍 March 20 — Why TataPower, IndusTower &amp; Biocon Were Missed</h2>
 
-    <p style="margin-bottom:18px; color:var(--muted); font-size:0.85rem;">
-      On March 20, 2026, three stocks were executed as live manual trades outside the bot.
-      Below is a detailed breakdown of why each one was not (or only partially) executed by the script.
-    </p>
-
-    <div class="march20-grid">
-
-      <!-- TATAPOWER -->
-      <div class="stock-card" style="border-color:#f85149">
-        <h4><span class="dot-red"></span> TATAPOWER <span class="tag tag-red">NOT TRADED</span></h4>
-        <div class="reason">
-          <p style="margin-bottom:6px"><strong>Root Cause:</strong> Sector filter blocked every attempt.</p>
-          <p style="color:var(--muted); margin-bottom:6px; font-size:0.82rem;">
-            TataPower belongs to <code>NSE:NIFTYENERGY-INDEX</code>. On March 20, the Energy sector was
-            <strong>NOT in the bot's Top-5 performing sectors</strong> at the 09:30 scan window.
-            The bot only allows trades in the top 5 sectors by momentum score.
-          </p>
-        </div>
-        <div class="rejection-log">
-          09:30:17 ❌ TATAPOWER BUY REJECTED:<br>
-          &nbsp;&nbsp;Sector NSE:NIFTYENERGY-INDEX Not Top 5<br>
-          <span style="color:#3fb950">Overall market: BULLISH (A/D 196/10)</span>
-        </div>
-        <p style="margin-top:10px; font-size:0.78rem; color:var(--muted);">
-          <strong>⚠️ Gap:</strong> Despite the stock having a valid technical setup (hence manual trade),
-          the sector-rank filter acted as a hard block. If Energy was performing well that day,
-          the sector ranking may need a shorter lookback or a manual override capability.
-        </p>
-      </div>
-
-      <!-- INDUSTOWER -->
-      <div class="stock-card" style="border-color:#f85149">
-        <h4><span class="dot-red"></span> INDUSTOWER <span class="tag tag-red">NOT TRADED</span></h4>
-        <div class="reason">
-          <p style="margin-bottom:6px"><strong>Root Cause:</strong> Double barrier — sector filter + weak candle close.</p>
-          <p style="color:var(--muted); margin-bottom:6px; font-size:0.82rem;">
-            IndusTower belongs to <code>NSE:NIFTYINFRA-INDEX</code> which was also not in the Top-5 sectors.
-            Additionally, on the 10:00 and 10:15 candles, the closing was "weak" (upper wicks >30%),
-            which the bot treats as a low-conviction BUY signal.
-          </p>
-        </div>
-        <div class="rejection-log">
-          09:30:17 ❌ INDUSTOWER BUY REJECTED:<br>
-          &nbsp;&nbsp;Sector NSE:NIFTYINFRA-INDEX Not Top 5<br>
-          10:00:14 ❌ INDUSTOWER BUY REJECTED:<br>
-          &nbsp;&nbsp;Weak Close (Upper Wick 61% &gt; 30%)<br>
-          10:15:08 ❌ INDUSTOWER BUY REJECTED:<br>
-          &nbsp;&nbsp;Weak Close (Upper Wick 35% &gt; 30%)<br>
-          10:30:11 ❌ INDUSTOWER BUY REJECTED:<br>
-          &nbsp;&nbsp;Sector NSE:NIFTYINFRA-INDEX Not Top 5
-        </div>
-        <p style="margin-top:10px; font-size:0.78rem; color:var(--muted);">
-          <strong>⚠️ Gap:</strong> IndusTower was scanned repeatedly (4 times) but rejected each time.
-          The persistent sector exclusion + weak-wick candle combination means the bot would
-          <em>never</em> take this trade regardless of how good the price action was.
-        </p>
-      </div>
-
-      <!-- BIOCON -->
-      <div class="stock-card" style="border-color:#d29922">
-        <h4><span class="dot-green"></span> BIOCON <span class="tag tag-yellow">TAKEN LATE (13:30)</span></h4>
-        <div class="reason">
-          <p style="margin-bottom:6px"><strong>Status:</strong> <em>The script DID trade Biocon</em> — but only from 13:30 onward.</p>
-          <p style="color:var(--muted); margin-bottom:6px; font-size:0.82rem;">
-            Biocon qualified with RVOL 8.4× at the 13:30 scan (extremely high relative volume).
-            It was entered BUY @ ₹380.70 with Qty 1,010. SL was hit at ₹379.40 at 14:33.
-            If the manual trade was taken earlier in the day at a better entry,
-            the script's first valid qualification window was only at 13:30.
-          </p>
-        </div>
-        <div class="rejection-log">
-          13:30:13 ✅ BIOCON BUY QUALIFIED (RVOL: 8.4×)<br>
-          13:30:13 📈 [PAPER] BUYING NSE:BIOCON-EQ<br>
-          &nbsp;&nbsp;Entry: ₹380.70 | Qty: 1,010<br>
-          14:33:15 ❌ EXIT BIOCON: SL Hit @ ₹379.40<br>
-          <br>
-          Final: GROSS −₹1,313 | NET −₹1,497.88
-        </div>
-        <p style="margin-top:10px; font-size:0.78rem; color:var(--muted);">
-          <strong>⚠️ Gap:</strong> If the live trade was taken earlier (e.g., morning session),
-          the bot's volume filter (RVOL threshold) may have blocked earlier candles.
-          The stock only achieved sufficient relative volume by 13:30 — afternoon entry timing mismatch.
-        </p>
-      </div>
-
-    </div>
-
-    <div class="anomaly-item" style="margin-top:4px">
-      <h4>📋 Summary: Why the Script Missed TataPower &amp; IndusTower on March 20</h4>
-      <p>
-        Both TataPower (<code>NIFTYENERGY</code>) and IndusTower (<code>NIFTYINFRA</code>) were blocked by the
-        <strong>sector-ranking filter</strong>. On March 20, the market was broadly BULLISH (A/D: 196/10 at open)
-        but the top-5 sectors were dominated by other indices (IT, Pharma, FMCG, Auto, Consumer Durables based on the approved stocks
-        that did qualify). Energy and Infrastructure stocks were in the lower half of sector rankings that day.
-        <br><br>
-        <strong>Recommendation:</strong> Consider adding a manual-override watchlist or a "sector-agnostic" bypass
-        for stocks with very high RVOL (&gt;3×) on strong trend days, so that high-conviction technical setups
-        don't get blocked purely by sector rank.
-      </p>
-    </div>
-  </section>
-</div>
-
-</main>
-
-<script>
 // ═══════════════════════════ DATA ═══════════════════════════
 const days = [
   {
@@ -1008,7 +898,7 @@ function showTab(id) {
 <div id="tab-reco"class="tab-pane">
 <section>
 <h2>💡 Profitability Recommendations</h2>
-<p style="color:var(--muted);font-size:0.9rem;">Based on deep analysis of all 15 days of logs (Mar 2–20) <strong>and</strong> source code review of <code>nidhi_sudarshan_pro_final_old.py</code>. Issues are ranked by estimated profit impact.</p>
+<p style="color:var(--muted);font-size:0.9rem;">Based on deep analysis of all 15 days of logs (Mar 2–20) <strong>and</strong> source code review of <code>sudarshan_sudarshan_pro_final_old.py</code>. Issues are ranked by estimated profit impact.</p>
 
 <!-- ═══ STAT CARDS ═══ -->
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:20px 0">
@@ -1175,7 +1065,7 @@ function showTab(id) {
     <span style="background:#3498db22;color:#3498db;border-radius:4px;padding:2px 8px;font-size:0.78rem">OPERATIONAL</span>
   </div>
   <p style="color:var(--muted);font-size:0.85rem;margin:0 0 8px">On <strong>Mar 3</strong>, the bot started at 13:34 instead of 09:30 — missing the entire profitable morning. The fyersDataSocket logs show recurring <code>403 Forbidden</code> WebSocket errors (most recently Mar 20–21) indicating overnight token expiry. Mar 3 was likely a complete session miss due to this pattern.
-  <br><br>The file <code>nidhi_generate_token.py</code> already exists in the same folder. Schedule it to run automatically at 08:45 IST via Windows Task Scheduler so a fresh token is always ready before market open. This single fix could recover ₹3,000–5,000+ of missed profitable days annually.</p>
+  <br><br>The file <code>sudarshan_generate_token.py</code> already exists in the same folder. Schedule it to run automatically at 08:45 IST via Windows Task Scheduler so a fresh token is always ready before market open. This single fix could recover ₹3,000–5,000+ of missed profitable days annually.</p>
 </div>
 
 <!-- R9 -->
@@ -1251,7 +1141,7 @@ function showTab(id) {
     <li>Remove <code>"09:30"</code> from SCAN_TIMES (R4)</li>
     <li>Remove <code>"13:00", "13:15", "13:30"</code> from SCAN_TIMES (R5)</li>
     <li>Change <code>MAX_TRADES_ACTIVE</code> from 10 → 5 (R9)</li>
-    <li>Schedule <code>nidhi_generate_token.py</code> via Task Scheduler at 08:45 (R8)</li>
+    <li>Schedule <code>sudarshan_generate_token.py</code> via Task Scheduler at 08:45 (R8)</li>
   </ol>
   <p style="color:var(--muted);font-size:0.82rem;margin:8px 0 0">These 6 changes together touch 4 lines of code + 1 scheduled task. Based on the 15-day data, they could realistically improve net PnL by <strong>30–45%</strong> by eliminating the worst loss clusters while keeping the profitable 09:45–11:00 window intact.</p>
 </div>
