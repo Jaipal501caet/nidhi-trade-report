@@ -35,24 +35,57 @@
     }
     header h1 { font-size: 1.7rem; font-weight: 700; color: var(--accent); }
     header p  { color: var(--muted); margin-top: 4px; font-size: 0.85rem; }
+    /* ─── KPI Strip ─── */
     .summary-strip {
-      display: flex; flex-wrap: wrap; gap: 16px;
-      padding: 20px 40px;
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
       background: var(--surface);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 2px solid var(--border);
+    }
+    .kpi-divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: var(--border);
     }
     .kpi {
-      flex: 1 1 160px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px 18px;
+      position: relative;
+      padding: 16px 20px 14px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      transition: background .15s;
     }
-    .kpi .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-    .kpi .value { font-size: 1.5rem; font-weight: 700; margin-top: 4px; }
+    .kpi:hover { background: var(--surface2); }
+    .kpi::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      border-radius: 0;
+    }
+    .kpi.k-blue::after  { background: var(--accent); }
+    .kpi.k-green::after { background: var(--green); }
+    .kpi.k-red::after   { background: var(--red); }
+    .kpi.k-purple::after{ background: #a371f7; }
+    .kpi.k-orange::after{ background: #f0883e; }
+    .kpi .kpi-icon { font-size: 1rem; margin-bottom: 6px; line-height: 1; }
+    .kpi .label {
+      font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: .09em; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .kpi .value {
+      font-size: 1.35rem; font-weight: 700;
+      margin-top: 3px; line-height: 1.2;
+      white-space: nowrap;
+    }
     .kpi .value.pos { color: var(--green); }
     .kpi .value.neg { color: var(--red); }
     .kpi .value.neu { color: var(--accent); }
+    .kpi .value.purple { color: #a371f7; }
+    .kpi .sub-label {
+      font-size: 0.66rem; color: var(--muted);
+      margin-top: 2px; line-height: 1.3;
+    }
     main { padding: 28px 40px; max-width: 1400px; margin: 0 auto; }
     section { margin-bottom: 48px; }
     section h2 {
@@ -170,8 +203,12 @@
     /* toggle arrow */
     .toggle-arrow { font-size: 0.8rem; color: var(--muted); transition: transform .2s; }
     .toggle-arrow.open { transform: rotate(90deg); }
+    @media (max-width: 1100px) {
+      .summary-strip { grid-template-columns: repeat(4, 1fr); }
+    }
     @media (max-width: 600px) {
-      header, .summary-strip, main { padding-left: 16px; padding-right: 16px; }
+      header, main { padding-left: 16px; padding-right: 16px; }
+      .summary-strip { grid-template-columns: repeat(2, 1fr); }
       .hm-cell { width: 70px; height: 58px; }
     }
   </style>
@@ -185,62 +222,97 @@
 
 <!-- ─── KPI Strip ─── -->
 <div class="summary-strip">
-  <div class="kpi">
+
+  <!-- Row 1: Performance -->
+  <div class="kpi k-blue">
+    <div class="kpi-icon">📅</div>
     <div class="label">Trading Days</div>
     <div class="value neu" id="kpi-days">—</div>
+    <div class="sub-label">Sessions logged</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-blue">
+    <div class="kpi-icon">🔁</div>
     <div class="label">Total Trades</div>
     <div class="value neu" id="kpi-trades">—</div>
+    <div class="sub-label">Executed orders</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-blue">
+    <div class="kpi-icon">📊</div>
     <div class="label">Gross P&amp;L</div>
     <div class="value" id="kpi-gross">—</div>
+    <div class="sub-label">Before charges</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-orange">
+    <div class="kpi-icon">💸</div>
     <div class="label">Total Charges</div>
     <div class="value neg" id="kpi-charges">—</div>
+    <div class="sub-label">STT + brokerage</div>
   </div>
-  <div class="kpi">
-    <div class="label">Net P&amp;L (after charges)</div>
+  <div class="kpi k-blue">
+    <div class="kpi-icon">💰</div>
+    <div class="label">Net P&amp;L</div>
     <div class="value" id="kpi-net">—</div>
+    <div class="sub-label">After all charges</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-purple">
+    <div class="kpi-icon">📈</div>
+    <div class="label">Return on Capital</div>
+    <div class="value purple" id="kpi-roc">—</div>
+    <div class="sub-label">On ₹5,00,000</div>
+  </div>
+  <div class="kpi k-purple">
+    <div class="kpi-icon">🚀</div>
+    <div class="label">Annualised Return</div>
+    <div class="value purple" id="kpi-ann">—</div>
+    <div class="sub-label">Extrapolated</div>
+  </div>
+
+  <div class="kpi-divider"></div>
+
+  <!-- Row 2: Win / Loss / Capital -->
+  <div class="kpi k-green">
+    <div class="kpi-icon">✅</div>
     <div class="label">Winning Days</div>
     <div class="value pos" id="kpi-wins">—</div>
+    <div class="sub-label">Net positive</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-red">
+    <div class="kpi-icon">❌</div>
     <div class="label">Losing Days</div>
     <div class="value neg" id="kpi-losses">—</div>
+    <div class="sub-label">Net negative</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-green">
+    <div class="kpi-icon">🏆</div>
     <div class="label">Best Day</div>
     <div class="value pos" id="kpi-best">—</div>
+    <div class="sub-label">Highest net</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-red">
+    <div class="kpi-icon">📉</div>
     <div class="label">Worst Day</div>
     <div class="value neg" id="kpi-worst">—</div>
+    <div class="sub-label">Lowest net</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-blue">
+    <div class="kpi-icon">🏦</div>
     <div class="label">Account Capital</div>
     <div class="value neu">₹5,00,000</div>
+    <div class="sub-label">Cash in Fyers</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-blue">
+    <div class="kpi-icon">⚡</div>
     <div class="label">Leverage Used</div>
     <div class="value neu">5×</div>
+    <div class="sub-label">MIS intraday</div>
   </div>
-  <div class="kpi">
+  <div class="kpi k-blue" style="border-right:none">
+    <div class="kpi-icon">🔒</div>
     <div class="label">Max Margin / Trade</div>
     <div class="value neu">₹1,25,000</div>
+    <div class="sub-label">25% capital cap</div>
   </div>
-  <div class="kpi">
-    <div class="label">Return on Capital</div>
-    <div class="value" id="kpi-roc">—</div>
-  </div>
-  <div class="kpi">
-    <div class="label">Annualised Return</div>
-    <div class="value" id="kpi-ann">—</div>
-  </div>
+
 </div>
 
 <main>
