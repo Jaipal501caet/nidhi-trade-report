@@ -38,7 +38,7 @@
     /* ─── KPI Strip ─── */
     .summary-strip {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       background: var(--surface);
       border-bottom: 2px solid var(--border);
     }
@@ -204,7 +204,7 @@
     .toggle-arrow { font-size: 0.8rem; color: var(--muted); transition: transform .2s; }
     .toggle-arrow.open { transform: rotate(90deg); }
     @media (max-width: 1100px) {
-      .summary-strip { grid-template-columns: repeat(4, 1fr); }
+      .summary-strip { grid-template-columns: repeat(3, 1fr); }
     }
     @media (max-width: 600px) {
       header, main { padding-left: 16px; padding-right: 16px; }
@@ -223,18 +223,12 @@
 <!-- ─── KPI Strip ─── -->
 <div class="summary-strip">
 
-  <!-- Row 1: Performance -->
+  <!-- Row 1: Capital & Returns -->
   <div class="kpi k-blue">
-    <div class="kpi-icon">📅</div>
-    <div class="label">Trading Days</div>
-    <div class="value neu" id="kpi-days">—</div>
-    <div class="sub-label">Sessions logged</div>
-  </div>
-  <div class="kpi k-blue">
-    <div class="kpi-icon">🔁</div>
-    <div class="label">Total Trades</div>
-    <div class="value neu" id="kpi-trades">—</div>
-    <div class="sub-label">Executed orders</div>
+    <div class="kpi-icon">🏦</div>
+    <div class="label">Total Capital</div>
+    <div class="value neu">₹5,00,000</div>
+    <div class="sub-label">Deployed capital</div>
   </div>
   <div class="kpi k-blue">
     <div class="kpi-icon">📊</div>
@@ -244,7 +238,7 @@
   </div>
   <div class="kpi k-orange">
     <div class="kpi-icon">💸</div>
-    <div class="label">Total Charges</div>
+    <div class="label">Charges (approx)</div>
     <div class="value neg" id="kpi-charges">—</div>
     <div class="sub-label">STT + brokerage</div>
   </div>
@@ -258,29 +252,41 @@
     <div class="kpi-icon">📈</div>
     <div class="label">Return on Capital</div>
     <div class="value purple" id="kpi-roc">—</div>
-    <div class="sub-label">On ₹5,00,000</div>
+    <div class="sub-label">Period return</div>
   </div>
-  <div class="kpi k-purple">
+  <div class="kpi k-purple" style="border-right:none">
     <div class="kpi-icon">🚀</div>
-    <div class="label">Annualised Return</div>
+    <div class="label">Annualised ROI</div>
     <div class="value purple" id="kpi-ann">—</div>
     <div class="sub-label">Extrapolated</div>
   </div>
 
   <div class="kpi-divider"></div>
 
-  <!-- Row 2: Win / Loss / Capital -->
+  <!-- Row 2: Trade Statistics -->
+  <div class="kpi k-blue">
+    <div class="kpi-icon">📅</div>
+    <div class="label">Trading Days</div>
+    <div class="value neu" id="kpi-days">—</div>
+    <div class="sub-label">Sessions logged</div>
+  </div>
+  <div class="kpi k-blue">
+    <div class="kpi-icon">🔁</div>
+    <div class="label">Total Trades</div>
+    <div class="value neu" id="kpi-trades">—</div>
+    <div class="sub-label">Executed orders</div>
+  </div>
   <div class="kpi k-green">
     <div class="kpi-icon">✅</div>
     <div class="label">Winning Days</div>
     <div class="value pos" id="kpi-wins">—</div>
-    <div class="sub-label">Net positive</div>
+    <div class="sub-label">Net positive days</div>
   </div>
   <div class="kpi k-red">
     <div class="kpi-icon">❌</div>
     <div class="label">Losing Days</div>
     <div class="value neg" id="kpi-losses">—</div>
-    <div class="sub-label">Net negative</div>
+    <div class="sub-label">Net negative days</div>
   </div>
   <div class="kpi k-green">
     <div class="kpi-icon">🏆</div>
@@ -288,29 +294,11 @@
     <div class="value pos" id="kpi-best">—</div>
     <div class="sub-label">Highest net</div>
   </div>
-  <div class="kpi k-red">
+  <div class="kpi k-red" style="border-right:none">
     <div class="kpi-icon">📉</div>
     <div class="label">Worst Day</div>
     <div class="value neg" id="kpi-worst">—</div>
     <div class="sub-label">Lowest net</div>
-  </div>
-  <div class="kpi k-blue">
-    <div class="kpi-icon">🏦</div>
-    <div class="label">Account Capital</div>
-    <div class="value neu">₹5,00,000</div>
-    <div class="sub-label">Cash in Fyers</div>
-  </div>
-  <div class="kpi k-blue">
-    <div class="kpi-icon">⚡</div>
-    <div class="label">Leverage Used</div>
-    <div class="value neu">5×</div>
-    <div class="sub-label">MIS intraday</div>
-  </div>
-  <div class="kpi k-blue" style="border-right:none">
-    <div class="kpi-icon">🔒</div>
-    <div class="label">Max Margin / Trade</div>
-    <div class="value neu">₹1,25,000</div>
-    <div class="sub-label">25% capital cap</div>
   </div>
 
 </div>
