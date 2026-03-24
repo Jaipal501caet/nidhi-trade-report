@@ -624,11 +624,9 @@ const days = [
     gross: -711.28, charges: 100.88, net: -812.17,
     trades: [
       { sym:"EXIDEIND", side:"BUY", entry:"13:45", exit:"13:49", qty:499, ep:300.78, xp:299.35, pnl:-812.17 },
-];
-]
+    ]
   },
-
-
+];
 // ═══════════════════════════ KPI STRIP (computed from data) ═══════════════════
 (function() {
   const totalTrades  = days.reduce((s,d) => s + d.trades.length, 0);
